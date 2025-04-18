@@ -23,8 +23,8 @@ export function Orar({ orar }) {
             <td>{linie.ziua}</td>
             <td>{linie.baza}</td>
             <td>{linie.locul}</td> 
-            {ore.map((ora, index) => (
-                <td key={index}>{linie.ore[ora] || ''}</td>
+            {ore.map((ora, index) => (  
+                <td key={index}> {linie.ore[ora] ? <> {linie.ore[ora][0]}<br/> {linie.ore[ora][1]} </> : ''} </td> 
             ))}
         </tr>
     ))
