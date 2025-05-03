@@ -17,18 +17,38 @@ export function Orar({ orar }) {
         }
         grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti];  
     }); 
+    
+    const grupuri = Object.values(grupZiBazaLoc); 
+    const rows = [];
 
-    const rows = Object.values(grupZiBazaLoc).map((linie, index) => (
-         <tr key={index}>
-            <td>{linie.ziua}</td>
-            <td>{linie.baza}</td>
-            <td>{linie.locul}</td> 
-            {ore.map((ora, index) => (  
-                <td key={index}> {linie.ore[ora] ? <> {linie.ore[ora][0]}<br/> {linie.ore[ora][1]} </> : ''} </td> 
-            ))}
-        </tr>
-    ))
-    console.log(grupZiBazaLoc);
+    for (let i = 0; i < grupuri.length; i++) {
+        const linie = grupuri[i];
+
+        rows.push(
+            <tr key={`row-${i}`}>
+                <td>{linie.ziua}</td>
+                <td>{linie.baza}</td>
+                <td>{linie.locul}</td>
+                {ore.map((ora, index) => (
+                    <td key={index}>
+                        {linie.ore[ora] ? ( 
+                            <>
+                                {linie.ore[ora][0]}<br />{linie.ore[ora][1]}
+                            </>
+                        ) : ''}
+                    </td>
+                ))}
+            </tr>
+        );
+
+        if ((i + 1) % 4 === 0 && i + 1 < grupuri.length) {
+            rows.push(
+                <tr key={`spacer-${i}`}>
+                    <td colSpan={ore.length + 3}></td>
+                </tr> 
+            );
+        }
+    }
 
     return (
         <>

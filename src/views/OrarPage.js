@@ -1,6 +1,6 @@
 import { Orar } from '../components/Orar';
  
-export function OrarPage() {
+export function OrarPage({ user }) {
     const orar = [
         { id: 0, ziua: "LUNI", baza: "Baza 1", locul: "Sala", ora: "12:00", participanti: "Gui", activitate: "Fitness" },
         { id: 1, ziua: "LUNI", baza: "Baza 1", locul: "Sala", ora: "14:00", participanti: "Gui", activitate: "Fitness" },
@@ -50,7 +50,8 @@ export function OrarPage() {
         { id: 41, ziua: "VINERI", baza: "Baza 2", locul: "Sala", ora: "10:00", participanti: "Varga", activitate: "Aerobic" },
         { id: 42, ziua: "VINERI", baza: "Baza 2", locul: "Sala", ora: "12:00", participanti: "Varga", activitate: "Aerobic" },
         { id: 43, ziua: "VINERI", baza: "Baza 2", locul: "Sala", ora: "14:00", participanti: "Varga", activitate: "Aerobic" },
-        { id: 44, ziua: "VINERI", baza: "Baza 2", locul: "Sala", ora: "16:00", participanti: "Varga", activitate: "Cerc volei" }
+        { id: 44, ziua: "VINERI", baza: "Baza 2", locul: "Sala", ora: "16:00", participanti: "Varga", activitate: "Cerc volei" },
+        { id: 45, ziua: 'VINERI', baza: 'Baza 2', locul: 'Teren' }
         ];
 
     

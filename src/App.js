@@ -1,12 +1,23 @@
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
-import { OrarPage } from './views/OrarPage'; 
- 
+import { OrarPage } from './views/OrarPage';
+import { LoginPage } from './views/LoginPage'; 
+
 function App() {
-  return ( 
-    <div>
-      <OrarPage />  
-    </div> 
+  const [user, setUser] = useState(null);
+
+  return (
+    <div className='wrapper'>
+      {!user ? (
+        <LoginPage onLogin={setUser} />
+      ) : (
+        <>
+          <h2>{user.username} ({user.role})</h2>
+          <button onClick={() => setUser(null)}>Logout</button> 
+          <OrarPage user={user} />
+        </>
+      )}
+    </div>
   );
 }
 

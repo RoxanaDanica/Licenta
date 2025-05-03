@@ -18,7 +18,7 @@
 
 /*TABLE*/
 table { width: 100%;border-collapse: collapse;table-layout: fixed; }
-th,td { padding: 8px;text-align: left; color: #000000; }  
+th,td { height: 55px;text-align: left;color: #000000;padding: 0 8px; }  
 tr { border-color: inherit;border-style: solid;border-width: 0;color: #666;font-size: 16px;font-weight: 300; }
 th { background-color: var(--main-text-color);color: white;padding: 15px;font-size: 18px; }
 input { padding: 5px;width: 90%;margin: auto auto 10px auto; }
