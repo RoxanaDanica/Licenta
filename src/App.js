@@ -1,23 +1,52 @@
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import './App.css';
 import { OrarPage } from './views/OrarPage';
 import { LoginPage } from './views/LoginPage'; 
 
-function App() {
-  const [user, setUser] = useState(null);
+function AppRoutes({ user, setUser }) {
+  const location = useLocation();
+
+  if (!user && location.pathname !== '/login') {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user && location.pathname === '/login') {
+    return <Navigate to="/orar" replace />;
+  }
 
   return (
-    <div className='wrapper'>
-      {!user ? (
-        <LoginPage onLogin={setUser} /> 
-      ) : (
+    <>
+      {user && (
         <>
-          <h2>{user.username} ({user.role})</h2>
-          <button onClick={() => setUser(null)}>Logout</button> 
-          <OrarPage user={user} />
+          <h2>{user.role} / orar</h2>
+          <button onClick={() => { localStorage.removeItem('user'); setUser(null); }}>Logout</button>
         </>
       )}
-    </div>
+
+      <Routes>
+        <Route path="/login" element={<LoginPage onLogin={(user) => {
+          localStorage.setItem('user', JSON.stringify(user));
+          setUser(user);
+        }} />} />
+        <Route path="/orar" element={<OrarPage user={user} />} />
+        <Route path="*" element={<Navigate to={user ? "/orar" : "/login"} replace />} />
+      </Routes>
+    </>
+  );
+}
+
+export function App() {
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  return (
+    <BrowserRouter>
+      <div className='wrapper'>
+        <AppRoutes user={user} setUser={setUser} />
+      </div>
+    </BrowserRouter>
   );
 }
 

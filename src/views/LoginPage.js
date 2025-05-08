@@ -1,13 +1,21 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LoginForm } from "../components/LoginForm";
 
 export function LoginPage({ onLogin }) {
+  const navigate = useNavigate();
+
   const users = [
     { username: 'profesor', password: 'profesor', role: 'profesor' },
     { username: 'student', password: 'student', role: 'student' }
   ];
 
   const [role, setRole] = useState(null);
+
+  const handleLogin = (user) => {
+    onLogin(user); 
+    navigate('/orar'); 
+  };
 
   return (
     <div>
@@ -20,7 +28,7 @@ export function LoginPage({ onLogin }) {
       ) : (
         <>
           <h3>Autentificare - {role}</h3>
-          <LoginForm users={users} role={role} onLogin={onLogin} />
+          <LoginForm users={users} role={role} onLogin={handleLogin} />
         </>
       )}
     </div>
