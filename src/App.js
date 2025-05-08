@@ -9,7 +9,7 @@ function App() {
   return (
     <div className='wrapper'>
       {!user ? (
-        <LoginPage onLogin={setUser} />
+        <LoginPage onLogin={setUser} /> 
       ) : (
         <>
           <h2>{user.username} ({user.role})</h2>

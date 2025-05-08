@@ -10,7 +10,7 @@ export function LoginPage({ onLogin }) {
   const [role, setRole] = useState(null);
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div>
       {!role ? (
         <>
           <h2>Selectează tipul de utilizator</h2>

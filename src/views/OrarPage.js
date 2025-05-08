@@ -6,7 +6,6 @@ export function OrarPage({ user }) {
         { id: 1, ziua: "LUNI", baza: "Baza 1", locul: "Sala", ora: "14:00", participanti: "Gui", activitate: "Fitness" },
         { id: 2, ziua: "LUNI", baza: "Baza 1", locul: "Stadion", ora: "16:00", participanti: "Alexandru+Sărăndan", activitate: "Jogging" },
         { id: 3, ziua: "LUNI", baza: "Baza 1", locul: "Stadion", ora: "17:30", participanti: "Alexandru+Sărăndan", activitate: "Jogging" },
-        { id: 4, ziua: "LUNI", baza: "Baza 1", locul: "Stadion", ora: "20:00", participanti: "Datcu+Ionescu", activitate: null },
         { id: 5, ziua: "LUNI", baza: "Baza 2", locul: "Sala", ora: "20:00", participanti: "Ionescu", activitate: "Baschet 3X3" },
         { id: 6, ziua: "LUNI", baza: "Baza 2", locul: "Teren", ora: "16:00", participanti: "Molcuț+Szabo", activitate: "Fotbal" },
         { id: 7, ziua: "LUNI", baza: "Baza 2", locul: "Teren", ora: "17:30", participanti: "Molcuț+Szabo", activitate: "Fotbal" },
@@ -38,7 +37,6 @@ export function OrarPage({ user }) {
         { id: 30, ziua: "JOI", baza: "Baza 2", locul: "Sala", ora: "16:00", participanti: "Ionescu", activitate: "Baschet 3X3" },
         { id: 31, ziua: "JOI", baza: "Baza 2", locul: "Teren", ora: "16:00", participanti: "Szabo + Datcu", activitate: "Fotbal" },
         { id: 32, ziua: "JOI", baza: "Baza 2", locul: "Teren", ora: "17:30", participanti: "Molcuț + Datcu", activitate: "Fotbal feminin" },
-        { id: 33, ziua: "JOI", baza: "Baza 2", locul: "Teren", ora: "20:00", participanti: "Molcuț + Szabo", activitate: null },
 
         { id: 34, ziua: "VINERI", baza: "Baza 1", locul: "Sala", ora: "08:00", participanti: "Sărăndan", activitate: "Culturism" },
         { id: 35, ziua: "VINERI", baza: "Baza 1", locul: "Sala", ora: "10:00", participanti: "Sărăndan", activitate: "Culturism" },
