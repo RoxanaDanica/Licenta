@@ -1,41 +1,72 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { OrarPage } from './views/OrarPage';
-import { LoginPage } from './views/LoginPage'; 
+import { LoginPage } from './views/LoginPage';
+import { AdministratorPage } from './views/AdministratorPage';
+import { ManageProfesoriPage } from './views/ManageProfesoriPage';
+import { ManageMateriiPage } from './views/ManageMateriiPage';
 
-function AppRoutes({ user, setUser }) {
+function InnerApp({ user, setUser }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   if (!user && location.pathname !== '/login') {
     return <Navigate to="/login" replace />;
   }
 
+  if (user?.role === 'administrator' && location.pathname === '/orar') {
+    return <Navigate to="/administrator" replace />;
+  }
+
+
   if (user && location.pathname === '/login') {
-    return <Navigate to="/orar" replace />;
+    return <Navigate to={user.role === 'administrator' ? "/administrator" : "/orar"} replace />;
   }
 
   return (
     <>
       {user && (
         <>
-          <h2>{user.role} / orar</h2>
-          <button onClick={() => { localStorage.removeItem('user'); setUser(null); }}>Logout</button>
+          <h2>{user.role}</h2>
+          <button onClick={() => {
+            localStorage.removeItem('user');
+            setUser(null);
+          }}>Logout</button>
+
+          {/* Afișează doar butoanele relevante în funcție de rol */}
+          {user.role !== 'administrator' && (
+            <button onClick={() => navigate('/orar')}>Profesor</button>
+          )}
+          {user.role === 'administrator' && (
+            <button onClick={() => navigate('/administrator')}>Administrator</button>
+          )}
         </>
       )}
 
       <Routes>
-        <Route path="/login" element={<LoginPage onLogin={(user) => {
-          localStorage.setItem('user', JSON.stringify(user));
-          setUser(user);
-        }} />} />
-        <Route path="/orar" element={<OrarPage user={user} />} />
-        <Route path="*" element={<Navigate to={user ? "/orar" : "/login"} replace />} />
+        <Route path="/login" element={
+          <LoginPage onLogin={(user) => {
+            localStorage.setItem('user', JSON.stringify(user));
+            setUser(user);
+          }} />} />
+        <Route path="/profesori" element={<ManageProfesoriPage />} />
+        <Route path="/materii" element={<ManageMateriiPage />} />
+        {/* student profesorii  */}
+        {user?.role !== 'administrator' && (
+          <Route path="/orar" element={<OrarPage user={user} />} />
+        )}
+        {/* Administratorul */}
+        {user?.role === 'administrator' && (
+          <Route path="/administrator" element={<AdministratorPage />} />
+        )}
+        {/* Redirect universal */}
+        <Route path="*" element={<Navigate to={user?.role === 'administrator' ? "/administrator" : "/orar"} replace />} />
       </Routes>
     </>
   );
 }
 
-export function App() {
+function App() {
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
@@ -43,11 +74,8 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <div className='wrapper'>
-        <AppRoutes user={user} setUser={setUser} />
-      </div>
+      <InnerApp user={user} setUser={setUser} />
     </BrowserRouter>
   );
 }
-
 export default App;
