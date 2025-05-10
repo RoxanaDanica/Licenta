@@ -1,6 +1,7 @@
 import './styles/Orar.css';  
 import { MainButton } from './MainButton';
 import { useEffect, useState } from 'react';
+import { axiosInstance } from '../api/axios';
 
 const ore = ['08:00', '10:00', '12:00', '14:00', '16:00', '17:30', '20:00'];
 
@@ -18,12 +19,12 @@ function grupareOrar(orar) {
                 ore: {}
             };
         }
-        grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti];
+        grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti, row.nr_max_locuri];
     });
     return Object.values(grupZiBazaLoc);
 }
 
-function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate }) {
+function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata }) {
     return (
         <tr style={editMode && editMode !== linie.ziua ? { display: 'none' } : {}} className={`zi-${linie.ziua}`}>
             <td>
@@ -37,24 +38,35 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
 
                 return ( 
                     <td key={index}>
-                        {/* {!(editMode === linie.ziua) ? ( */}
                         {editMode === linie.ziua ? (
                             <> 
+                                <select value={linie.ore?.[ora]?.[0] ?? ''} onChange={(e) => { const materieSelectata = e.target.value; const profesorGasit = materiePreferata.find(item => item.nume_materie === materieSelectata)?.nume_profesor ?? ''; onChangeActivitate(linie.id, linie.ziua, linie.baza, linie.locul, ora, materieSelectata); onChangeProfesor(linie.id, linie.ziua, linie.baza, linie.locul, ora, profesorGasit);  const nrMaxExistenta = linie.ore?.[ora]?.[2];
+                                    if (!nrMaxExistenta) {
+                                    onChangeNumarMaximLocuri(linie.id, linie.ziua, linie.baza, linie.locul, ora, 50);
+                                    } }}>
+                                    <option value="">Selectează materie...</option>
+                                    {[...new Set(materiePreferata.map(item => item.nume_materie))].map((materie, index) => (
+                                        <option key={index} value={materie}>
+                                            {materie}
+                                        </option>
+                                    ))}
+                                </select> 
+                                <br />
                                 <input
-                                    type="text"
-                                    value={linie.ore?.[ora]?.[0] ?? ''}
-                                    onChange={(e) => onChangeActivitate(linie.id, linie.ziua, linie.baza, linie.locul, ora, e.target.value)}
-                                /><br />
-                                <input
-                                    type="text"
+                                    type="text" placeholder='Profesor'
                                     value={linie.ore?.[ora]?.[1] ?? ''}
                                     onChange={(e) => onChangeProfesor(linie.id, linie.ziua, linie.baza, linie.locul, ora, e.target.value)}
                                 />
+                                <input placeholder='Numar locuri' type='number' value={linie.ore?.[ora]?.[2] ?? ''} onChange={(e) => onChangeNumarMaximLocuri(linie.id, linie.ziua, linie.baza, linie.locul, ora, e.target.value)} />
                             </>
                         ) : (
                             <>
                                 <span>{valoare[0]}</span><br />
-                                <span>{valoare[1]}</span> 
+                                <span>{valoare[1]}</span> <br/>
+                                {valoare[2] && (
+                                    <span className="nrDisponibile" title="Numar maxim de locuri disponibile">Locuri: {valoare[2]} </span>
+                                )}
+
                             </>
                         )}
                 </td>
@@ -87,11 +99,12 @@ export function Orar({ orar }) {
     const [ziEditata, setZiEditata] = useState(null);
     const [grupuri, setGrupuri] = useState([]);
     const [rows, setRows] = useState([]);
+    const [materiePreferata, setMateriePreferata] = useState([]);
+    const [editedInputs, setEditedInputs] = useState(new Set());
     const zileAfisate = new Set();
-    const idEditat = new Set();
 
     useEffect(() => {
-        console.log('grupuri===>', grupuri);
+        // console.log('grupuri===>', grupuri);
     }, [grupuri]);
 
 
@@ -99,6 +112,13 @@ export function Orar({ orar }) {
         const orarGrupat = grupareOrar(orar);
         setGrupuri(orarGrupat);
     }, [orar]);
+
+    useEffect(() => {
+        axiosInstance.get('/profesori').then(response => {
+            setMateriePreferata(response.data);
+            console.log('response materie preferata',response.data);
+        });
+    }, []);
     
 
     useEffect(() => {
@@ -110,7 +130,7 @@ export function Orar({ orar }) {
             }
 
             liniiOrar.push(
-                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} />
+                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} />
             );
 
             // add empty line
@@ -130,18 +150,31 @@ export function Orar({ orar }) {
 
     // o sa modifice variabila grupuri
     const editeazaProfesor = (id,ziua, baza, locul, ora, newProfesor) => {
-        idEditat.add(id);
+        const newEditedInputs = new Set(editedInputs);
+        newEditedInputs.add(id);
+        setEditedInputs(newEditedInputs); 
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', newProfesor];
+        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', newProfesor, grupEditat.ore?.[ora]?.[2] ?? ''];
         setGrupuri(newGrupuri);
     }
 
     const editeazaActivitate = (id,ziua, baza, locul, ora, newActivitata) => {
-        idEditat.add(id);
+        const newEditedInputs = new Set(editedInputs);
+        newEditedInputs.add(id);
+        setEditedInputs(newEditedInputs);
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [newActivitata, grupEditat.ore?.[ora]?.[1] ?? ''];
+        grupEditat.ore[ora] = [newActivitata, grupEditat.ore?.[ora]?.[1] ?? '',grupEditat.ore?.[ora]?.[2] ?? ''];
+        setGrupuri(newGrupuri);
+    } 
+    const editeazaNumarMaximLocuri = (id,ziua, baza, locul, ora, newNrMaxDisponibile) => {
+        const newEditedInputs = new Set(editedInputs);
+        newEditedInputs.add(id);
+        setEditedInputs(newEditedInputs);
+        const newGrupuri = [...grupuri];
+        const grupEditat = newGrupuri.find(g => g.id === id);
+        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', grupEditat.ore?.[ora]?.[1] ?? '',newNrMaxDisponibile];
         setGrupuri(newGrupuri);
     } 
 
@@ -150,8 +183,39 @@ export function Orar({ orar }) {
     };
 
     const handleSave = () => {
+        // console.log('editedInputs', editedInputs); 
+        // console.log(grupuri); 
+        const convertOrarToArray = [];
+    
+        editedInputs.forEach(id => {
+            const grupGasit = grupuri.find(grup => grup.id === id); 
+            // console.log('grup gasit before if',grupGasit); 
+            if (grupGasit) {
+                // convertOrarToArray.push(grupGasit);
+                const { ziua, baza, locul, ore } = grupGasit;
+                // TODO: Se trimite aceeasi linie de mai multe ori
+                for (const ora in ore) {
+                    const [activitate, participanti, nr_max_locuri] = ore[ora];
+                    convertOrarToArray.push({
+                        ziua, 
+                        baza,
+                        locul,
+                        activitate,
+                        participanti,
+                        nr_max_locuri,
+                        ora
+                    }); 
+                }
+                // console.log('convertOrarToArray ====>', convertOrarToArray); 
+            }
+        }); 
+
+        axiosInstance.post('/save', { data: convertOrarToArray }).then(response => {
+            console.log('save response: ', response);
+        }); 
         setZiEditata(null);
     };
+     
 
 
     return (

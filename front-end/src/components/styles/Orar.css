@@ -26,7 +26,7 @@ td span:first-child { color: black;font-weight: 400;font-family: "Roboto", sans-
 /*TABLE*/
 table { width: 100%;border-collapse: collapse; }
 thead { border-bottom: 1px solid black;font-family: "Roboto", sans-serif; }
-th,td { height: 55px;text-align: left;color: #000000;padding: 0 8px; font-family: 'Open Sans', sans-serif; font-size: 14px; }  
+th,td { height: 90px;text-align: left;color: #000000;padding: 0 8px; font-family: 'Open Sans', sans-serif; font-size: 14px; }  
 tr { border-color: inherit;border-style: solid;border-width: 0;color: #666;font-size: 16px;font-weight: 300; }
 th { color:#000000;font-size: 18px; }
 input { padding: 5px;width: 90%;margin: auto auto 10px auto; }
@@ -39,3 +39,10 @@ tr:nth-child(even) { background: #F0F0F0; }
 
 td .buttonsTd { width: 100%; }
 .marginTr { border-bottom: 40px solid white; } 
+.nrDisponibile {
+    font-size: 0.8rem;
+    color: #555;
+    font-style: italic;
+    display: block;
+    margin-top: 2px;
+}
