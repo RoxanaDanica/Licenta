@@ -1,5 +1,6 @@
 import Raect, { useEffect, useState } from 'react';
 import { Orar } from '../components/Orar';
+import { HeaderProfesor } from '../components/HeaderProfesor';
 import { axiosInstance } from '../api/axios';
  
 export function OrarPage({ user }) {
@@ -13,7 +14,7 @@ export function OrarPage({ user }) {
       
     return (
         <>
-            <Orar orar = {orar} /> 
+            <Orar orar = {orar} user = {user}/> 
         </>
     )
 

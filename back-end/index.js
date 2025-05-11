@@ -10,6 +10,7 @@ app.use(bodyParser.json());
 async function startApp() {
     const connection = await initializeDatabase(); 
 
+    /* TABLE MATERII */
     app.get('/materii', async (req, res) => {
         try {
             const [materii] = await connection.query('SELECT * FROM materii');
@@ -20,6 +21,66 @@ async function startApp() {
         }
     });
 
+    /* add materie */
+    app.post('/materie', async (req, res) => {
+        const { nume_materie } = req.body;
+    
+        try {
+            const query = `
+                INSERT INTO materii (nume_materie)
+                VALUES (?)
+            `;
+            await connection.query(query, [nume_materie]);
+    
+            res.status(200).json({ message: 'Materie salvata cu succes' });
+        } catch (error) {
+            console.error('Eroare la db:', error);
+            res.status(500).json({ message: 'Eroare la salvare' });
+        }
+    });
+    /* update materie */
+    app.put('/materie/:id', async (req, res) => {
+        const { id } = req.params; 
+        const { nume_materie } = req.body; 
+    
+        try {
+            const query = `
+                UPDATE materii
+                SET nume_materie = ?
+                WHERE id = ?
+            `;
+            await connection.query(query, [nume_materie, id]);
+    
+            res.status(200).json({ message: 'Materie actualizată cu succes' });
+        } catch (error) {
+            console.error('Eroare la db:', error);
+            res.status(500).json({ message: 'Eroare la actualizare' });
+        }
+    });
+    /* delete materie */
+    app.delete('/materie/:id', async (req, res) => {
+        const { id } = req.params;
+    
+        try {
+            const query = `
+                DELETE FROM materii
+                WHERE id = ?
+            `;
+            const result = await connection.query(query, [id]);
+    
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'Materie nu găsită' });
+            }
+    
+            res.status(200).json({ message: 'Materie ștearsă cu succes' });
+        } catch (error) {
+            console.error('Eroare la db:', error);
+            res.status(500).json({ message: 'Eroare la ștergere' });
+        }
+    });
+    
+    
+    /* TABLE ORAR */
     app.get('/orar', async(req, res) => {
         try {
             const [orar] = await connection.query('SELECT * FROM orar');
@@ -31,6 +92,8 @@ async function startApp() {
             // res.error(error);
         }
     });
+
+    
 
     app.get('/profesori', async (req, res) => {
         try {

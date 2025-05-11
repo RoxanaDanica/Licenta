@@ -5,6 +5,8 @@ import { LoginPage } from './views/LoginPage';
 import { AdministratorPage } from './views/AdministratorPage';
 import { ManageProfesoriPage } from './views/ManageProfesoriPage';
 import { ManageMateriiPage } from './views/ManageMateriiPage';
+import { HeaderProfesor } from './components/HeaderProfesor'; 
+import { HeaderStudent } from './components/HeaderStudent';
 
 function InnerApp({ user, setUser }) {
   const location = useLocation();
@@ -14,52 +16,26 @@ function InnerApp({ user, setUser }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role === 'administrator' && location.pathname === '/orar') {
-    return <Navigate to="/administrator" replace />;
-  }
-
-
-  if (user && location.pathname === '/login') {
-    return <Navigate to={user.role === 'administrator' ? "/administrator" : "/orar"} replace />;
-  }
-
   return (
     <>
-      {user && (
-        <>
-          <h2>{user.role}</h2>
-          <button onClick={() => {
-            localStorage.removeItem('user');
-            setUser(null);
-          }}>Logout</button>
-
-          {/* Afișează doar butoanele relevante în funcție de rol */}
-          {user.role !== 'administrator' && (
-            <button onClick={() => navigate('/orar')}>Profesor</button>
-          )}
-          {user.role === 'administrator' && (
-            <button onClick={() => navigate('/administrator')}>Administrator</button>
-          )}
-        </>
-      )}
+       {user?.role === 'profesor' && <HeaderProfesor setUser={setUser} />}
+       {user?.role === 'student' && <HeaderStudent setUser={setUser} />}
 
       <Routes>
         <Route path="/login" element={
           <LoginPage onLogin={(user) => {
             localStorage.setItem('user', JSON.stringify(user));
-            setUser(user);
-          }} />} />
+            setUser(user); 
+          }} />
+        } />
         <Route path="/profesori" element={<ManageProfesoriPage />} />
         <Route path="/materii" element={<ManageMateriiPage />} />
-        {/* student profesorii  */}
         {user?.role !== 'administrator' && (
           <Route path="/orar" element={<OrarPage user={user} />} />
         )}
-        {/* Administratorul */}
         {user?.role === 'administrator' && (
           <Route path="/administrator" element={<AdministratorPage />} />
         )}
-        {/* Redirect universal */}
         <Route path="*" element={<Navigate to={user?.role === 'administrator' ? "/administrator" : "/orar"} replace />} />
       </Routes>
     </>
@@ -78,4 +54,5 @@ function App() {
     </BrowserRouter>
   );
 }
+
 export default App;

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import { LoginForm } from "../components/LoginForm";
 
 export function LoginPage({ onLogin }) {
@@ -11,28 +10,25 @@ export function LoginPage({ onLogin }) {
     { username: 'administrator', password: 'administrator', role: 'administrator' }
   ];
 
-  const [role, setRole] = useState(null);
-
   const handleLogin = (user) => {
-    onLogin(user); 
-    navigate('/orar'); 
+    if (user) {
+      onLogin(user); 
+      const destination = user.role === 'administrator' ? '/administrator' : '/orar';
+      navigate(destination);
+    } 
   };
 
   return (
-    <div>
-      {!role ? (
-        <>
-          <h2>Selectează tipul de utilizator</h2>
-          <button onClick={() => setRole('student')}>Student</button>
-          <button onClick={() => setRole('profesor')}>Profesor</button>
-          <button onClick={() => setRole('administrator')}>Administrator</button>
-        </>
-      ) : (
-        <>
-          <h3>Autentificare - {role}</h3>
-          <LoginForm users={users} role={role} onLogin={handleLogin} />
-        </>
-      )}
+    <div className="wrapperLoginPage">
+      <div className='containerLoginForm'>
+        <div className='wrapperTitle'>
+          <h3>Departamentul de Educatie Fizica si Sport</h3>
+        </div>
+        <div className="wrapperLogin">
+          <h3>Login EFS</h3>
+          <LoginForm users={users} onLogin={handleLogin} />
+        </div>
+      </div>
     </div>
   );
 }

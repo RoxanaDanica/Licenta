@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-
-const materiiInitial = ['Fitness', 'Inot', 'Fotbal Feminin'];
+import React, { useEffect, useState } from 'react';
+import { axiosInstance } from '../api/axios';
 
 export const ManageMateriiPage = () => {
     const [numeMaterie, setNumeMaterie] = useState('');
-    const [materii, setMaterii] = useState(materiiInitial);
+    const [materii, setMaterii] = useState([]);
 
     const handleSubmit = (e) => {
       e.preventDefault();
@@ -12,6 +11,12 @@ export const ManageMateriiPage = () => {
       setMaterii(newMaterii);
       setNumeMaterie('');
     };
+    /* TO DO: ADD MATERII DELETE MATERII AND UPDATE */
+    useEffect(() => {
+        axiosInstance.get('/materii').then(response => {
+            setMaterii(response.data);
+        });
+    }, []);
 
   return (
     <div>
@@ -32,7 +37,9 @@ export const ManageMateriiPage = () => {
       
         <div className='lista-materii'>
             <ul>
-                {materii.map(mat => <li>{mat}</li>)}
+              {materii.map((mat, index) => (
+                <li key={index}>{mat.nume_materie}</li>
+              ))}
             </ul>
         </div>
     </div>

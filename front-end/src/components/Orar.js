@@ -24,12 +24,19 @@ function grupareOrar(orar) {
     return Object.values(grupZiBazaLoc);
 }
 
-function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata }) {
+function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user }) {
     return (
         <tr style={editMode && editMode !== linie.ziua ? { display: 'none' } : {}} className={`zi-${linie.ziua}`}>
-            <td>
+            {/* <td>
                 {ziNoua && linie.ziua && <MainButton text={`Edit ${linie.ziua}`} onClick={() => onEdit(linie.ziua)} />}
-            </td>
+            </td> */}
+            { user?.role === 'profesor' && (
+                <td>
+                    {ziNoua && linie.ziua && (
+                        <MainButton text={`Edit ${linie.ziua}`} onClick={() => onEdit(linie.ziua)} />
+                    )}
+                </td> )
+            }
             <td>{linie.ziua}</td>
             <td>{linie.baza}</td>
             <td>{linie.locul}</td>
@@ -85,23 +92,27 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
     "ore": {
         "12:00": [
             "Fitness",
-            "Gui"
+            "Gui",
+            "50"
         ],
         "14:00": [
             "Fitness",
-            "Gui"
+            "Gui",
+            "50"
         ]
     }
 }
 */
 
-export function Orar({ orar }) {
+export function Orar({ orar, user }) {
     const [ziEditata, setZiEditata] = useState(null);
     const [grupuri, setGrupuri] = useState([]);
     const [rows, setRows] = useState([]);
     const [materiePreferata, setMateriePreferata] = useState([]);
     const [editedInputs, setEditedInputs] = useState(new Set());
     const zileAfisate = new Set();
+
+    // console.log('user',user);
 
     useEffect(() => {
         // console.log('grupuri===>', grupuri);
@@ -130,7 +141,7 @@ export function Orar({ orar }) {
             }
 
             liniiOrar.push(
-                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} />
+                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user}/>
             );
 
             // add empty line
@@ -183,17 +194,11 @@ export function Orar({ orar }) {
     };
 
     const handleSave = () => {
-        // console.log('editedInputs', editedInputs); 
-        // console.log(grupuri); 
         const convertOrarToArray = [];
-    
         editedInputs.forEach(id => {
             const grupGasit = grupuri.find(grup => grup.id === id); 
-            // console.log('grup gasit before if',grupGasit); 
             if (grupGasit) {
-                // convertOrarToArray.push(grupGasit);
                 const { ziua, baza, locul, ore } = grupGasit;
-                // TODO: Se trimite aceeasi linie de mai multe ori
                 for (const ora in ore) {
                     const [activitate, participanti, nr_max_locuri] = ore[ora];
                     convertOrarToArray.push({
@@ -206,7 +211,6 @@ export function Orar({ orar }) {
                         ora
                     }); 
                 }
-                // console.log('convertOrarToArray ====>', convertOrarToArray); 
             }
         }); 
 
@@ -215,6 +219,11 @@ export function Orar({ orar }) {
         }); 
         setZiEditata(null);
     };
+    
+    const closeEditMode = () => {
+        window.location.reload(); 
+    };
+    
      
 
 
@@ -226,7 +235,8 @@ export function Orar({ orar }) {
             <table className="generalPadding wrapper">
                 <thead>
                     <tr>
-                        <th>Opțiuni</th>
+                        {/* <th>Opțiuni</th> */}
+                        {user.role === 'profesor' && <th>Opțiuni</th>}
                         <th>Ziua</th>
                         <th>Baza</th>
                         <th>Locul</th>
@@ -240,8 +250,9 @@ export function Orar({ orar }) {
                 </tbody>
             </table>
             {ziEditata && (
-                <div className="wrapperBtnSave">
+                <div className="wrapper wrapperBtnSave">
                     <MainButton text="Save" onClick={() => handleSave()} />
+                    <MainButton text="Back" onClick={() => closeEditMode()}/>
                 </div>
             )}
 

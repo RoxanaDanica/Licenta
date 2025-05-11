@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { MainButton } from "../components/MainButton";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUser, faLock } from '@fortawesome/free-solid-svg-icons'; 
+import './styles/Orar.css';  
 
-export function LoginForm({ users, role, onLogin }) {
+export function LoginForm({ users, onLogin }) {
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -9,10 +13,9 @@ export function LoginForm({ users, role, onLogin }) {
     e.preventDefault();
 
     const user = users.find(
-      user =>
+      user => 
         user.username === userName &&
-        user.password === password &&
-        user.role === role
+        user.password === password
     );
 
     if (user) {
@@ -26,22 +29,20 @@ export function LoginForm({ users, role, onLogin }) {
   return (
     <form onSubmit={handleSubmit}>
       <div className="groupForm">
-        <label>Utilizator: </label>
-        <input
+        <input placeholder='E-mail'
           value={userName}
           onChange={e => setUserName(e.target.value)}
         />
       </div>
       <div className="groupForm">
-        <label>Parola: </label>
-        <input
+        <input placeholder='Password'
           type="password"
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
       </div>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <button type="submit">Login</button>
+      <MainButton text="Login" type="submit" />
     </form>
   );
 }
