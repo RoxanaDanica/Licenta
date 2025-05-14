@@ -18,13 +18,12 @@ function InnerApp({ user, setUser }) {
 
   return (
     <>
-       {user?.role === 'profesor' && <HeaderProfesor setUser={setUser} />}
-       {user?.role === 'student' && <HeaderStudent setUser={setUser} />}
+      {user?.role === 'profesor' && <HeaderProfesor setUser={setUser} />}
+      {user?.role === 'student' && <HeaderStudent setUser={setUser} />}
 
       <Routes>
         <Route path="/login" element={
           <LoginPage onLogin={(user) => {
-            localStorage.setItem('user', JSON.stringify(user));
             setUser(user); 
           }} />
         } />

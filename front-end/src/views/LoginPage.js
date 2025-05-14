@@ -1,21 +1,41 @@
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from "../components/LoginForm";
+import { axiosInstance } from '../api/axios';
+import React, { useEffect, useState } from 'react';
 
 export function LoginPage({ onLogin }) {
   const navigate = useNavigate();
 
-  const users = [
-    { username: 'profesor', password: 'profesor', role: 'profesor' },
-    { username: 'student', password: 'student', role: 'student' },
-    { username: 'administrator', password: 'administrator', role: 'administrator' }
-  ];
+  const [studenti, setStudenti] = useState([]);
+  const [allUsers, setAllUsers] = useState([
+    { id: 0, username: 'profesor', password: 'profesor', role: 'profesor' },
+    { id: 1, username: 'administrator', password: 'administrator', role: 'administrator' }
+  ]);
+
+  useEffect(() => {
+    axiosInstance.get('/studenti').then(response => {
+      setStudenti(response.data);
+
+      const setRolStudent = response.data.map(student => ({
+        id: student.id,
+        username: student.username,
+        password: student.password,
+        role: 'student'
+      }));
+
+      setAllUsers(prev => [...prev, ...setRolStudent]);
+    });
+  }, []);
 
   const handleLogin = (user) => {
     if (user) {
-      onLogin(user); 
+      onLogin(user);
       const destination = user.role === 'administrator' ? '/administrator' : '/orar';
       navigate(destination);
-    } 
+
+      const userWithId = { ...user, id: user.id };
+      localStorage.setItem('user', JSON.stringify(userWithId));
+    }
   };
 
   return (
@@ -26,7 +46,7 @@ export function LoginPage({ onLogin }) {
         </div>
         <div className="wrapperLogin">
           <h3>Login EFS</h3>
-          <LoginForm users={users} onLogin={handleLogin} />
+          <LoginForm users={allUsers} onLogin={handleLogin} />
         </div>
       </div>
     </div>

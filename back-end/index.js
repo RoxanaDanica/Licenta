@@ -10,6 +10,110 @@ app.use(bodyParser.json());
 async function startApp() {
     const connection = await initializeDatabase(); 
 
+
+    /* TABELA STUDENTI_INSCRISI */
+    app.post('/inscriere', async (req, res) => {
+        const { id_student, id_slot } = req.body;
+        console.log('req.body',req.body);
+      
+        if (!id_student || !id_slot) {
+          return res.status(400).json({ message: 'Date lipsă' });
+        }
+        
+        try {
+            // 1. Verifică dacă studentul e deja înscris la acel slot
+            const [exist] = await connection.execute(
+                'SELECT * FROM studenti_inscrisi WHERE id_student = ? AND id_slot = ?',
+                [id_student, id_slot]
+            );
+
+            if (exist.length > 0) {
+                return res.status(409).json({ message: 'Deja înscris la acest slot' });
+            }
+
+            // 2. Verifică dacă e deja înscris în 3 sloturi
+            const [inscrieri] = await connection.execute(
+                'SELECT COUNT(*) as total FROM studenti_inscrisi WHERE id_student = ?',
+                [id_student]
+            );
+
+            if (inscrieri[0].total >= 3) {
+                return res.status(403).json({ message: 'Maxim 3 înscrieri permise' });
+            }
+
+            //Verificam daca slotul este disponibil
+            [ [infoSlot] ] = await connection.execute(
+                `SELECT 
+                    (SELECT COUNT(*) FROM studenti_inscrisi WHERE id_slot = ?) as ocupate,
+                    (SELECT nr_max_locuri FROM orar WHERE id = ?) as maxim
+                `,
+                [id_slot, id_slot]
+            );
+
+            if (infoSlot.ocupate >= infoSlot.maxim) {
+                return res.status(403).json({ message: 'Nu mai sunt locuri disponibile' });
+            }
+                
+
+            // 3. Inscriere
+            await connection.execute(
+                'INSERT INTO studenti_inscrisi (id_student, id_slot) VALUES (?, ?)',
+                [id_student, id_slot]
+            );
+
+            res.status(200).json({ message: 'Înscriere realizată cu succes' });
+        } catch (error) {
+            console.error('Eroare la înscriere:', error);
+            res.status(303).json({ message: 'Eroare inscriere' });
+        }
+      });
+
+      //sloturi ocupate
+      app.get('/slot/:id', async (req, res) => {
+        const id_slot = req.params.id;
+    
+        try {
+            const infoSlot = await connection.execute(
+                `SELECT 
+                    o.nr_max_locuri AS maxim,
+                    COUNT(s.id_student) AS ocupate
+                FROM orar o
+                LEFT JOIN studenti_inscrisi s ON o.id = s.id_slot
+                WHERE o.id = ?
+                GROUP BY o.id`,
+                [id_slot]
+            );
+
+            const locuriOcupate = infoSlot[0]?.[0]?.ocupate;
+    
+            res.json({ locuriOcupate });
+        } catch (err) {
+            console.error('Eroare la interogare locuri:', err);
+            res.status(500).json({ message: 'Eroare server' });
+        }
+    });
+    
+          /* TABLE Studenti_inscrisi */
+    app.get('/studenti-inscrisi', async (req, res) => {
+        try {
+            const [studenti_inscrisi] = await connection.query('SELECT * FROM studenti_inscrisi');
+            res.json(studenti_inscrisi);
+        } catch (error) {
+            console.error('Eroare la obținerea studentiilor:', error);
+            res.status(404).json({ message: 'Eroare studenti' });
+        }
+    });
+
+    /* TABLE Studenti */
+    app.get('/studenti', async (req, res) => {
+        try {
+            const [studenti] = await connection.query('SELECT * FROM studenti');
+            res.json(studenti);
+        } catch (error) {
+            console.error('Eroare la obținerea studentiilor:', error);
+            res.status(404).json({ message: 'Eroare studenti' });
+        }
+    });
     /* TABLE MATERII */
     app.get('/materii', async (req, res) => {
         try {
@@ -84,6 +188,7 @@ async function startApp() {
     app.get('/orar', async(req, res) => {
         try {
             const [orar] = await connection.query('SELECT * FROM orar');
+            console.log('orar din db: ', orar);
             res.json(orar);
         } catch (error) {
             console.log('eroare orar===>',error);

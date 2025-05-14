@@ -1,8 +1,7 @@
-import Raect, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Orar } from '../components/Orar';
-import { HeaderProfesor } from '../components/HeaderProfesor';
 import { axiosInstance } from '../api/axios';
- 
+
 export function OrarPage({ user }) {
     const [orar, setOrar] = useState([]);
 
@@ -11,11 +10,10 @@ export function OrarPage({ user }) {
             setOrar(response.data);
         });
     }, []);
-      
-    return (
-        <>
-            <Orar orar = {orar} user = {user}/> 
-        </>
-    )
 
+    return ( 
+        <>
+            <Orar orar={orar} user={user} />
+        </>
+    );
 }

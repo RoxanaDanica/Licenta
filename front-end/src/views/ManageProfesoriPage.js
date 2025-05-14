@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from '../api/axios';
+import { MainButton } from '../components/MainButton';
 
 export const ManageProfesoriPage = () => {
   const [name, setName] = useState('');
@@ -72,58 +73,68 @@ export const ManageProfesoriPage = () => {
 
   return (
     <div>
-      <h1>Manage Profesori</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="name">Nume Profesor</label>
-          <input
-            type="text"
+      <h1 className='wrapper'>Profesori</h1>
+      <form className='wrapper generalPadding formContainer' onSubmit={handleSubmit}>
+        <div className="formWrapper">
+          <h3>Adauga profesor nou</h3>
+          <div className='wrapperInput'>
+            <input placeholder='Nume profesor' type="text"
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <br />
-          <label htmlFor="materie">Materie</label>
-          <select
-            id="materie"
-            value={materie}
-            onChange={(e) => setMaterie(e.target.value)}
-            required
-          >
-            <option value="">Selectează materie preferata</option>
-            {materii.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.nume_materie}
-              </option>
-            ))}
-          </select>
+            required />
+            <label></label>
+            <select
+              id="materie"
+              value={materie}
+              onChange={(e) => setMaterie(e.target.value)}
+              required
+            >
+              <option value="">Selectează materie preferata</option>
+              {materii.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nume_materie}
+                </option>
+              ))}
+            </select>
+            <MainButton text={editId ? 'Update' : 'Save'} type="submit"></MainButton>
+              {editId && (
+                <MainButton
+                  type="button" text="Anulează"
+                  onClick={() => {
+                    setEditId(null);
+                    setName('');
+                    setMaterie('');
+                  }}
+                >
+                  
+                </MainButton>
+            )}
+          </div>
         </div>
-        <button type="submit">{editId ? 'Update' : 'Save'}</button>
-        {editId && (
-          <button
-            type="button"
-            onClick={() => {
-              setEditId(null);
-              setName('');
-              setMaterie('');
-            }}
-          >
-            Anulează
-          </button>
-        )}
       </form>
-
       <div className="lista-profesori">
-        <ul>
-          {profesori.map((prof) => (
-            <li key={prof.id}>
-              {prof.nume_profesor} - {prof.nume_materie}
-              <button onClick={() => handleEdit(prof)}>Edit</button>
-              <button onClick={() => handleDelete(prof.id)}>Șterge</button>
-            </li>
-          ))}
-        </ul>
+            <table className='wrapper generalPadding'>
+              <thead>
+                <tr>
+                  <th>Nume profesor</th>
+                  <th>Nume materie preferata</th>
+                  <th>Optiuni</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profesori.map((prof) => (
+                  <tr key={prof.id}>
+                    <td>{prof.nume_profesor}</td>
+                    <td>{prof.nume_materie}</td>
+                    <td className='wrapperBtns'>
+                      <MainButton onClick={() => handleEdit(prof)} text="Edit"/>
+                      <MainButton onClick={() => handleDelete(prof.id)} text="Delete" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ function grupareOrar(orar) {
     orar.forEach(row => {
         const key = `${row.ziua}-${row.baza}-${row.locul}`;
         if (!grupZiBazaLoc[key]) {
-            grupZiBazaLoc[key] = {
+            grupZiBazaLoc[key] = { 
                 id: row.id,
                 ziua: row.ziua,
                 baza: row.baza,
@@ -19,12 +19,12 @@ function grupareOrar(orar) {
                 ore: {}
             };
         }
-        grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti, row.nr_max_locuri];
+        grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti, row.nr_max_locuri, row.id];
     });
     return Object.values(grupZiBazaLoc);
 }
 
-function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user }) {
+function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent }) {
     return (
         <tr style={editMode && editMode !== linie.ziua ? { display: 'none' } : {}} className={`zi-${linie.ziua}`}>
             {/* <td>
@@ -59,12 +59,12 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                     ))}
                                 </select> 
                                 <br />
-                                <input
+                                <input className='editModeInput'
                                     type="text" placeholder='Profesor'
                                     value={linie.ore?.[ora]?.[1] ?? ''}
                                     onChange={(e) => onChangeProfesor(linie.id, linie.ziua, linie.baza, linie.locul, ora, e.target.value)}
                                 />
-                                <input placeholder='Numar locuri' type='number' value={linie.ore?.[ora]?.[2] ?? ''} onChange={(e) => onChangeNumarMaximLocuri(linie.id, linie.ziua, linie.baza, linie.locul, ora, e.target.value)} />
+                                <input className='editModeInput' placeholder='Numar locuri' type='number' value={linie.ore?.[ora]?.[2] ?? ''} onChange={(e) => onChangeNumarMaximLocuri(linie.id, linie.ziua, linie.baza, linie.locul, ora, e.target.value)} />
                             </>
                         ) : (
                             <>
@@ -73,6 +73,18 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                 {valoare[2] && (
                                     <span className="nrDisponibile" title="Numar maxim de locuri disponibile">Locuri: {valoare[2]} </span>
                                 )}
+                                {
+                                    user?.role === 'student' && valoare[2] && ( 
+                                    <button onClick={() => { onInscrieStudent(linie.id); console.log(linie.ore?.[ora]?.[3] ); }}>Inscrie-te</button>
+                                    )
+                                }
+                                {user?.role === 'profesor' && valoare[1] && (
+                                    <>
+                                    
+                                        {/* <span>Locuri ocupate: {locuriOcupate?.[valoare[3]] ?? '—'}</span> */}
+                                    </>
+                                )}
+
 
                             </>
                         )}
@@ -110,9 +122,11 @@ export function Orar({ orar, user }) {
     const [rows, setRows] = useState([]);
     const [materiePreferata, setMateriePreferata] = useState([]);
     const [editedInputs, setEditedInputs] = useState(new Set());
+    const [locuriOcupate, setLocuriOcupate] = useState({});
     const zileAfisate = new Set();
 
-    // console.log('user',user);
+    console.log('user',user);
+    console.log(orar);
 
     useEffect(() => {
         // console.log('grupuri===>', grupuri);
@@ -141,7 +155,7 @@ export function Orar({ orar, user }) {
             }
 
             liniiOrar.push(
-                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user}/>
+                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user} onInscrieStudent={inscrieStudent} />
             );
 
             // add empty line
@@ -158,6 +172,19 @@ export function Orar({ orar, user }) {
         setRows(liniiOrar);
     }, [grupuri, ziEditata]);
 
+
+    const inscrieStudent = (idSlot) => {
+        const idStudent =  user.id //luat din loocalStoager
+        axiosInstance.post('/inscriere', {
+            id_student:idStudent,
+            id_slot: idSlot
+        }).then(response => {
+            console.log('response: ', response);
+        }).catch(err => {
+            console.log('error: ', err);
+        })
+    }
+    
 
     // o sa modifice variabila grupuri
     const editeazaProfesor = (id,ziua, baza, locul, ora, newProfesor) => {

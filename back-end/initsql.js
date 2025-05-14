@@ -24,7 +24,37 @@ const createSQL = `
         activitate VARCHAR(100) NOT NULL,
         nr_max_locuri INT DEFAULT 50
     );
+
+        
+    CREATE TABLE IF NOT EXISTS studenti (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(100) UNIQUE NOT NULL,
+        password VARCHAR(100) NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS studenti_inscrisi (
+    id_student INT NOT NULL,
+    id_slot INT NOT NULL
+);
+        
 `;
+
+    
+`;
+/*===============================================================================
+=============================TABELA STUDENTI=====================================
+================================================================================= */
+  const studenti = [
+          { username: 'student1', password: 'student' },
+          { username: 'student2', password: 'student' },
+          { username: 'student3', password: 'student' },
+          { username: 'student4', password: 'student' },
+          { username: 'student5', password: 'student' },
+          { username: 'student6', password: 'student' },
+          { username: 'student7', password: 'student' },
+          { username: 'student8', password: 'student' },
+          { username: 'student9', password: 'student' },
+          { username: 'student10', password: 'student' }
+        ];
 /*===============================================================================
 =============================TABELA MATERII======================================
 ================================================================================= */
