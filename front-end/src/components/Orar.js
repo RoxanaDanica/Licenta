@@ -75,9 +75,9 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                 )}
                                 {
                                     user?.role === 'student' && valoare[2] && ( 
-                                    <button onClick={() => { onInscrieStudent(linie.id); console.log(linie.ore?.[ora]?.[3] ); }}>Inscrie-te</button>
+                                    <button onClick={() => { onInscrieStudent(linie.ore?.[ora]?.[3]); console.log('linie id',linie.ore?.[ora]?.[3] ); }}>Inscrie-te</button>
                                     )
-                                }
+                                } 
                                 {user?.role === 'profesor' && valoare[1] && (
                                     <>
                                     
@@ -125,8 +125,8 @@ export function Orar({ orar, user }) {
     const [locuriOcupate, setLocuriOcupate] = useState({});
     const zileAfisate = new Set();
 
-    console.log('user',user);
-    console.log(orar);
+    // console.log('user',user);
+    // console.log(orar);
 
     useEffect(() => {
         // console.log('grupuri===>', grupuri);
@@ -141,7 +141,7 @@ export function Orar({ orar, user }) {
     useEffect(() => {
         axiosInstance.get('/profesori').then(response => {
             setMateriePreferata(response.data);
-            console.log('response materie preferata',response.data);
+            // console.log('response materie preferata',response.data);
         });
     }, []);
     
@@ -242,7 +242,7 @@ export function Orar({ orar, user }) {
         }); 
 
         axiosInstance.post('/save', { data: convertOrarToArray }).then(response => {
-            console.log('save response: ', response);
+            // console.log('save response: ', response);
         }); 
         setZiEditata(null);
     };
