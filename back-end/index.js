@@ -24,7 +24,8 @@ app.use('/save', orarRouter);
 app.use('/profesori', profesoriRouter);
 app.use('/profesor', profesoriRouter); 
 
-app.use('/inscriere', enrolledStudents)
+app.use('/inscriere', enrolledStudents);
+app.use('/slot', enrolledStudents);
 
 
 async function startApp() {

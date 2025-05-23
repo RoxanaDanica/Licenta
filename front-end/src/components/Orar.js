@@ -2,6 +2,7 @@ import './styles/Orar.css';
 import { MainButton } from './MainButton';
 import { useEffect, useState } from 'react';
 import { axiosInstance } from '../api/axios';
+import * as XLSX from "xlsx";
 
 const ore = ['08:00', '10:00', '12:00', '14:00', '16:00', '17:30', '20:00'];
 
@@ -19,9 +20,9 @@ function grupareOrar(orar) {
                 ore: {}
             };
         }
-        grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti, row.nr_max_locuri, row.id];
+        grupZiBazaLoc[key].ore[row.ora] = [row.activitate, row.participanti, row.nr_max_locuri, row.id, row.ocupate];
     });
-    return Object.values(grupZiBazaLoc);
+    return Object.values(grupZiBazaLoc); 
 }
 
 function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent }) {
@@ -71,21 +72,14 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                 <span>{valoare[0]}</span><br />
                                 <span>{valoare[1]}</span> <br/>
                                 {valoare[2] && (
-                                    <span className="nrDisponibile" title="Numar maxim de locuri disponibile">Locuri: {valoare[2]} </span>
+                                    <span className="nrDisponibile" title="Numar maxim de locuri ocupate/disponibile"> Locuri: {valoare[4]}/{valoare[2]} </span>
                                 )}
+
                                 {
                                     user?.role === 'student' && valoare[2] && ( 
                                     <button onClick={() => { onInscrieStudent(linie.ore?.[ora]?.[3]); console.log('linie id',linie.ore?.[ora]?.[3] ); }}>Inscrie-te</button>
                                     )
                                 } 
-                                {user?.role === 'profesor' && valoare[1] && (
-                                    <>
-                                    
-                                        {/* <span>Locuri ocupate: {locuriOcupate?.[valoare[3]] ?? '—'}</span> */}
-                                    </>
-                                )}
-
-
                             </>
                         )}
                 </td>
@@ -116,17 +110,13 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
 }
 */
 
-export function Orar({ orar, user }) {
+export function Orar({ orar, user, setOrar }) {
     const [ziEditata, setZiEditata] = useState(null);
     const [grupuri, setGrupuri] = useState([]);
     const [rows, setRows] = useState([]);
     const [materiePreferata, setMateriePreferata] = useState([]);
     const [editedInputs, setEditedInputs] = useState(new Set());
-    const [locuriOcupate, setLocuriOcupate] = useState({});
     const zileAfisate = new Set();
-
-    // console.log('user',user);
-    // console.log(orar);
 
     useEffect(() => {
         // console.log('grupuri===>', grupuri);
@@ -136,15 +126,14 @@ export function Orar({ orar, user }) {
     useEffect(() => {
         const orarGrupat = grupareOrar(orar);
         setGrupuri(orarGrupat);
+        console.log(orarGrupat);
     }, [orar]);
 
     useEffect(() => {
         axiosInstance.get('/profesori').then(response => {
             setMateriePreferata(response.data);
-            // console.log('response materie preferata',response.data);
         });
     }, []);
-    
 
     useEffect(() => {
         const liniiOrar = [];
@@ -172,7 +161,6 @@ export function Orar({ orar, user }) {
         setRows(liniiOrar);
     }, [grupuri, ziEditata]);
 
-
     const inscrieStudent = (idSlot) => {
         const idStudent =  user.id //luat din loocalStoager
         axiosInstance.post('/inscriere', {
@@ -180,11 +168,13 @@ export function Orar({ orar, user }) {
             id_slot: idSlot
         }).then(response => {
             console.log('response: ', response);
+            axiosInstance.get('/orar').then(response => {
+                setOrar(response.data);
+            });
         }).catch(err => {
             console.log('error: ', err);
         })
-    }
-    
+    } 
 
     // o sa modifice variabila grupuri
     const editeazaProfesor = (id,ziua, baza, locul, ora, newProfesor) => {
@@ -248,7 +238,7 @@ export function Orar({ orar, user }) {
     };
     
     const closeEditMode = () => {
-        window.location.reload(); 
+        setZiEditata(null);  
     };
     
      

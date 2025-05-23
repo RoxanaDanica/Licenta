@@ -12,5 +12,6 @@ const enrollStudent = async (id_student, id_slot) => {
         return enrolledStudent;
     }
 }  
+
   
 export {  enrollStudent };

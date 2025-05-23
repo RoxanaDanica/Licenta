@@ -13,7 +13,7 @@ export function OrarPage({ user }) {
 
     return ( 
         <>
-            <Orar orar={orar} user={user} />
+            <Orar orar={orar} user={user} setOrar={setOrar} />
         </>
     );
-}
+} 

@@ -6,10 +6,11 @@ const enrolledStudents = express.Router();
 enrolledStudents.post('/', async (req, res) => {
     const { id_student, id_slot } = req.body;
 
-    const students = await enrollStudent(id_student, id_slot);
-    console.log('in routes ====>', students)
-    res.send(students);
+    const enrolledStudent = await enrollStudent(id_student, id_slot);
+    // console.log('locuri Ocupate ====>', locuriOcupate)
+    res.send(enrolledStudent);
 
 }); 
+
 
 export default enrolledStudents;
