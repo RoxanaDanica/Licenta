@@ -1,4 +1,4 @@
-import { enrollStudentInCourse, isStudentEnrolled, hasReachedMaxEnrollments, isMaxSlotsReached } from "../persistence/enrolledStudents.js";
+import { enrollStudentInCourse, isStudentEnrolled, hasReachedMaxEnrollments, isMaxSlotsReached, retrieveEnrolledStudentsBySlot } from "../persistence/enrolledStudents.js";
 
 const enrollStudent = async (id_student, id_slot) => {
     if(await isMaxSlotsReached(id_slot) == true) {  
@@ -13,5 +13,8 @@ const enrollStudent = async (id_student, id_slot) => {
     }
 }  
 
+const getEnrolledStudentsBySlot = async (id_slot) => {
+    return await retrieveEnrolledStudentsBySlot(id_slot);
+};
   
-export {  enrollStudent };
+export {  enrollStudent, getEnrolledStudentsBySlot };

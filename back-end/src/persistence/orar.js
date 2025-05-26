@@ -20,12 +20,68 @@ export const getOrar = async () => {
 }
 
 
+// export const saveOrarRows = async (aData) => {
+//     const query = ` INSERT INTO orar (ziua, baza, locul, participanti, activitate, nr_max_locuri, ora) VALUES (?, ?, ?, ?, ?, ?, ?) `;
+//     const results = [];
+//     for (const row of aData) {
+//         const { ziua, baza, locul, participanti, activitate, nr_max_locuri, ora } = row;
+//         const [result] = await retrieveConnection().query(query, [
+//             ziua,
+//             baza,
+//             locul,
+//             participanti,
+//             activitate,
+//             nr_max_locuri,
+//             ora
+//         ]);
+//         results.push(result);
+//     }
+
+//     return results;
+// }
 export const saveOrarRows = async (aData) => {
-    const query = ` INSERT INTO orar (ziua, baza, locul, participanti, activitate, nr_max_locuri, ora) VALUES (?, ?, ?, ?, ?, ?, ?) `;
+    const insertQuery = `
+        INSERT INTO orar (ziua, baza, locul, participanti, activitate, nr_max_locuri, ora)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    const updateQuery = `
+        UPDATE orar
+        SET ziua = ?, baza = ?, locul = ?, participanti = ?, activitate = ?, nr_max_locuri = ?, ora = ?
+        WHERE id = ?
+    `;
+
     const results = [];
+
     for (const row of aData) {
-        const { ziua, baza, locul, participanti, activitate, nr_max_locuri, ora } = row;
-        const [result] = await retrieveConnection().query(query, [
+        const {
+          id,
+          ziua,
+          baza,
+          locul,
+          ora,
+          activitate,
+          participanti,
+          nr_max_locuri
+        } = row;
+      
+        const hasData = activitate?.trim() || participanti?.trim() || nr_max_locuri;
+      
+        if (id && Number(id) > 0) {
+          // UPDATE
+          const [result] = await retrieveConnection().query(updateQuery, [
+            ziua,
+            baza,
+            locul,
+            participanti,
+            activitate,
+            nr_max_locuri,
+            ora,
+            id
+          ]);
+          results.push(result);
+        } else if (hasData) {
+          // INSERT
+          const [result] = await retrieveConnection().query(insertQuery, [
             ziua,
             baza,
             locul,
@@ -33,9 +89,15 @@ export const saveOrarRows = async (aData) => {
             activitate,
             nr_max_locuri,
             ora
-        ]);
-        results.push(result);
-    }
+          ]);
+          results.push(result);
+        } else { 
+          // Slot gol, nu facem nimic
+          continue;
+        }
+      }
+      
+};
 
-    return results;
-}
+
+

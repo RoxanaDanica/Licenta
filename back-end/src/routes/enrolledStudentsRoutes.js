@@ -1,7 +1,7 @@
 import express from 'express';
-import { enrollStudent } from '../services/enrolledStudentsService.js';
+import { enrollStudent, getEnrolledStudentsBySlot } from '../services/enrolledStudentsService.js';
 
-const enrolledStudents = express.Router();
+const enrolledStudents = express.Router(); 
 
 enrolledStudents.post('/', async (req, res) => {
     const { id_student, id_slot } = req.body;
@@ -12,5 +12,12 @@ enrolledStudents.post('/', async (req, res) => {
 
 }); 
 
+enrolledStudents.get('/:id_slot', async (req, res) => {
+    const { id_slot } = req.params;
+
+    const students = await getEnrolledStudentsBySlot(id_slot);
+    res.json(students);
+
+});
 
 export default enrolledStudents;

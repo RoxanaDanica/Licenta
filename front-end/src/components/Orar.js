@@ -25,7 +25,7 @@ function grupareOrar(orar) {
     return Object.values(grupZiBazaLoc); 
 }
 
-function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent }) {
+function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent, exportaStudentiExcel }) {
     return (
         <tr style={editMode && editMode !== linie.ziua ? { display: 'none' } : {}} className={`zi-${linie.ziua}`}>
             {/* <td>
@@ -59,7 +59,7 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                         </option>
                                     ))}
                                 </select> 
-                                <br />
+                                <br /> 
                                 <input className='editModeInput'
                                     type="text" placeholder='Profesor'
                                     value={linie.ore?.[ora]?.[1] ?? ''}
@@ -80,6 +80,14 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                     <button onClick={() => { onInscrieStudent(linie.ore?.[ora]?.[3]); console.log('linie id',linie.ore?.[ora]?.[3] ); }}>Inscrie-te</button>
                                     )
                                 } 
+                                {
+                                    user?.role === 'profesor' && valoare[4] > 0 && (
+                                        <button onClick={() => exportaStudentiExcel(linie.ore?.[ora]?.[3])}>
+                                            Exporta studenti 
+                                        </button>
+                                    )
+                                }
+
                             </>
                         )}
                 </td>
@@ -144,7 +152,7 @@ export function Orar({ orar, user, setOrar }) {
             }
 
             liniiOrar.push(
-                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user} onInscrieStudent={inscrieStudent} />
+                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user} onInscrieStudent={inscrieStudent} exportaStudentiExcel={exportaStudentiExcel} />
             );
 
             // add empty line
@@ -160,6 +168,21 @@ export function Orar({ orar, user, setOrar }) {
 
         setRows(liniiOrar);
     }, [grupuri, ziEditata]);
+
+    const exportaStudentiExcel = (id_slot, filename = `studenti${id_slot}.xlsx`) => {
+        axiosInstance.get(`/studenti-inscrisi/${id_slot}`).then(response => {
+            const studenti = response.data;
+    
+            const ws = XLSX.utils.json_to_sheet(studenti);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Studenti");
+            XLSX.writeFile(wb, filename);
+        }).catch(err => {
+            console.error('Eroare export:', err);
+        });
+    };
+    
+    
 
     const inscrieStudent = (idSlot) => {
         const idStudent =  user.id //luat din loocalStoager
@@ -183,17 +206,17 @@ export function Orar({ orar, user, setOrar }) {
         setEditedInputs(newEditedInputs); 
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', newProfesor, grupEditat.ore?.[ora]?.[2] ?? ''];
-        setGrupuri(newGrupuri);
+        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', newProfesor, grupEditat.ore?.[ora]?.[2] ?? '', grupEditat.ore?.[ora]?.[3] ?? '', grupEditat.ore?.[ora]?.[4] ?? '', grupEditat.ore?.[ora]?.[5] ?? ''];
+        setGrupuri(newGrupuri); 
     }
-
+    
     const editeazaActivitate = (id,ziua, baza, locul, ora, newActivitata) => {
         const newEditedInputs = new Set(editedInputs);
         newEditedInputs.add(id);
         setEditedInputs(newEditedInputs);
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [newActivitata, grupEditat.ore?.[ora]?.[1] ?? '',grupEditat.ore?.[ora]?.[2] ?? ''];
+        grupEditat.ore[ora] = [newActivitata, grupEditat.ore?.[ora]?.[1] ?? '',grupEditat.ore?.[ora]?.[2] ?? '', grupEditat.ore?.[ora]?.[3] ?? '', grupEditat.ore?.[ora]?.[4] ?? '', grupEditat.ore?.[ora]?.[5] ?? ''];
         setGrupuri(newGrupuri);
     } 
     const editeazaNumarMaximLocuri = (id,ziua, baza, locul, ora, newNrMaxDisponibile) => {
@@ -202,38 +225,49 @@ export function Orar({ orar, user, setOrar }) {
         setEditedInputs(newEditedInputs);
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', grupEditat.ore?.[ora]?.[1] ?? '',newNrMaxDisponibile];
+        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', grupEditat.ore?.[ora]?.[1] ?? '',newNrMaxDisponibile, grupEditat.ore?.[ora]?.[3] ?? '', grupEditat.ore?.[ora]?.[4] ?? '', grupEditat.ore?.[ora]?.[5] ?? ''];
+        console.log('Grup editat', grupEditat);
         setGrupuri(newGrupuri);
     } 
+    
+    //TO DO => SA NU POT SAVLA NR MAX DE LOCURI < PARTICIPANTI
 
     const editDay = (zi) => {
         setZiEditata(zi);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         const convertOrarToArray = [];
+    
         editedInputs.forEach(id => {
             const grupGasit = grupuri.find(grup => grup.id === id); 
             if (grupGasit) {
                 const { ziua, baza, locul, ore } = grupGasit;
                 for (const ora in ore) {
-                    const [activitate, participanti, nr_max_locuri] = ore[ora];
+                    const [activitate, participanti, nr_max_locuri, id_slot] = ore[ora];
                     convertOrarToArray.push({
                         ziua, 
                         baza,
                         locul,
-                        activitate,
+                        activitate,  
                         participanti,
                         nr_max_locuri,
-                        ora
-                    }); 
+                        id: id_slot ?? null,
+                        ora 
+                    });
                 }
             }
-        }); 
-
-        axiosInstance.post('/save', { data: convertOrarToArray }).then(response => {
-            // console.log('save response: ', response);
-        }); 
+        });
+    
+        try {
+            await axiosInstance.post('/save', { data: convertOrarToArray });
+            const response = await axiosInstance.get('/orar');
+            setOrar(response.data);
+            // reconstruiește grupuri dacă e cazul
+        } catch (error) {
+            console.error('Eroare la salvare sau reîncărcare:', error);
+        }
+    
         setZiEditata(null);
     };
     
