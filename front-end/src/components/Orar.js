@@ -104,27 +104,6 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
     );
 }
 
-const onLanseazaPrezenta = (idSlot) => {
-    const dataCurenta = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
- axiosInstance.post('/prezenta/lansare', 
-  {
-    id_slot: idSlot,
-    data: dataCurenta
-  },
-  {
-    headers: { 'Content-Type': 'application/json' }
-  }
-)
-.then(response => {
-  console.log('Prezență lansată:', response.data);
-  alert('Prezența a fost lansată cu succes!');
-})
-.catch(err => {
-  console.error('Eroare lansare prezență:', err);
-  alert('Eroare la lansarea prezenței!');
-});
-
-  };
    
 
 /*
@@ -155,23 +134,26 @@ export function Orar({ orar, user, setOrar }) {
     const [editedInputs, setEditedInputs] = useState(new Set());
     const zileAfisate = new Set();
 
-    useEffect(() => {
-        console.log('grupuri===>', grupuri);
-    }, [grupuri]);
+    // state pentru prezenta:
+    const [prezentaModalOpen, setPrezentaModalOpen] = useState(false);
+    const [listaStudentiPrezenta, setListaStudentiPrezenta] = useState([]);
+    const [slotPrezentat, setSlotPrezentat] = useState(null);
+    const [dataPrezenta, setDataPrezenta] = useState('');
 
-
+    // grupare orar
     useEffect(() => {
         const orarGrupat = grupareOrar(orar);
         setGrupuri(orarGrupat);
-        console.log(orarGrupat);
     }, [orar]);
 
+    // preluare profesori
     useEffect(() => {
         axiosInstance.get('/profesori').then(response => {
             setMateriePreferata(response.data);
         });
     }, []);
 
+    // genereaza randuri tabel
     useEffect(() => {
         const liniiOrar = [];
         grupuri.forEach((linie, i) => {
@@ -179,29 +161,84 @@ export function Orar({ orar, user, setOrar }) {
             if (ziNoua) {
                 zileAfisate.add(linie.ziua);
             }
- 
+
             liniiOrar.push(
-                <RowOrar key={`row-${i}`}   onLanseazaPrezenta={onLanseazaPrezenta} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user} onInscrieStudent={inscrieStudent} exportaStudentiExcel={exportaStudentiExcel} />
+                <RowOrar key={`row-${i}`} 
+                    onLanseazaPrezenta={onLanseazaPrezenta}
+                    linie={linie}
+                    ore={ore}
+                    editMode={ziEditata}
+                    ziNoua={ziNoua}
+                    onEdit={editDay}
+                    onChangeActivitate={editeazaActivitate}
+                    onChangeProfesor={editeazaProfesor}
+                    onChangeNumarMaximLocuri={editeazaNumarMaximLocuri}
+                    materiePreferata={materiePreferata}
+                    user={user}
+                    onInscrieStudent={inscrieStudent}
+                    exportaStudentiExcel={exportaStudentiExcel}
+                />
             );
 
-            // add empty line
-            if (!ziEditata && (i + 1) % 4 === 0 && i + 1 < grupuri.length) { 
+            if (!ziEditata && (i + 1) % 4 === 0 && i + 1 < grupuri.length) {
                 liniiOrar.push(
                     <tr key={`spacer-${i}`}>
                         <td colSpan={ore.length + 4}></td>
                     </tr>
                 );
             }
-
         });
 
         setRows(liniiOrar);
     }, [grupuri, ziEditata]);
 
+    const onLanseazaPrezenta = (idSlot) => {
+        setSlotPrezentat(idSlot);
+        setPrezentaModalOpen(true);
+        setDataPrezenta(''); 
+        axiosInstance.get(`/studenti-inscrisi/${idSlot}`)
+          .then(response => {
+            const studenti = response.data.map(student => ({
+              ...student,
+              prezent: true 
+            }));
+
+            setListaStudentiPrezenta(studenti);
+          })
+          .catch(err => {
+            console.error('Eroare la preluarea studenților:', err);
+            alert('Eroare la preluarea studenților!');
+          });
+    };
+
+    const handleSalvarePrezenta = () => {
+        if (!dataPrezenta) {
+            alert('Te rog să selectezi o dată pentru prezență!');
+            return;
+        }
+
+        const prezentaFinala = listaStudentiPrezenta.map(student => ({
+            id_student: student.id_student,
+            id_slot: slotPrezentat,
+            data_prezentei: dataPrezenta, 
+            prezent: student.prezent
+        }));
+
+        axiosInstance.post('/prezenta/salvare', prezentaFinala)
+            .then(response => {
+                alert('Prezența a fost salvată!');
+                setPrezentaModalOpen(false);
+            })
+            .catch(err => {
+                console.error('Eroare la salvarea prezenței:', err);
+                alert('Eroare la salvarea prezenței!');
+            });
+    };
+
+
     const exportaStudentiExcel = (id_slot, filename = `studenti${id_slot}.xlsx`) => {
         axiosInstance.get(`/studenti-inscrisi/${id_slot}`).then(response => {
             const studenti = response.data;
-    
             const ws = XLSX.utils.json_to_sheet(studenti);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Studenti");
@@ -210,55 +247,71 @@ export function Orar({ orar, user, setOrar }) {
             console.error('Eroare export:', err);
         });
     };
-    
-    
 
     const inscrieStudent = (idSlot) => {
-        const idStudent =  user.id //luat din loocalStoager
+        const idStudent = user.id;
         axiosInstance.post('/inscriere', {
-            id_student:idStudent,
+            id_student: idStudent,
             id_slot: idSlot
         }).then(response => {
-            console.log('response: ', response);
             axiosInstance.get('/orar').then(response => {
                 setOrar(response.data);
             });
         }).catch(err => {
             console.log('error: ', err);
-        })
-    } 
+        });
+    };
 
-    // o sa modifice variabila grupuri
-    const editeazaProfesor = (id,ziua, baza, locul, ora, newProfesor) => {
-        const newEditedInputs = new Set(editedInputs);
-        newEditedInputs.add(id);
-        setEditedInputs(newEditedInputs); 
-        const newGrupuri = [...grupuri];
-        const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', newProfesor, grupEditat.ore?.[ora]?.[2] ?? '', grupEditat.ore?.[ora]?.[3] ?? '', grupEditat.ore?.[ora]?.[4] ?? '', grupEditat.ore?.[ora]?.[5] ?? ''];
-        setGrupuri(newGrupuri); 
-    }
-    
-    const editeazaActivitate = (id,ziua, baza, locul, ora, newActivitata) => {
+    const editeazaProfesor = (id, ziua, baza, locul, ora, newProfesor) => {
         const newEditedInputs = new Set(editedInputs);
         newEditedInputs.add(id);
         setEditedInputs(newEditedInputs);
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [newActivitata, grupEditat.ore?.[ora]?.[1] ?? '',grupEditat.ore?.[ora]?.[2] ?? '', grupEditat.ore?.[ora]?.[3] ?? '', grupEditat.ore?.[ora]?.[4] ?? '', grupEditat.ore?.[ora]?.[5] ?? ''];
+        grupEditat.ore[ora] = [
+            grupEditat.ore?.[ora]?.[0] ?? '',
+            newProfesor,
+            grupEditat.ore?.[ora]?.[2] ?? '',
+            grupEditat.ore?.[ora]?.[3] ?? '',
+            grupEditat.ore?.[ora]?.[4] ?? '',
+            grupEditat.ore?.[ora]?.[5] ?? ''
+        ];
         setGrupuri(newGrupuri);
-    } 
-    const editeazaNumarMaximLocuri = (id,ziua, baza, locul, ora, newNrMaxDisponibile) => {
+    };
+
+    const editeazaActivitate = (id, ziua, baza, locul, ora, newActivitata) => {
         const newEditedInputs = new Set(editedInputs);
         newEditedInputs.add(id);
         setEditedInputs(newEditedInputs);
         const newGrupuri = [...grupuri];
         const grupEditat = newGrupuri.find(g => g.id === id);
-        grupEditat.ore[ora] = [grupEditat.ore?.[ora]?.[0] ?? '', grupEditat.ore?.[ora]?.[1] ?? '',newNrMaxDisponibile, grupEditat.ore?.[ora]?.[3] ?? '', grupEditat.ore?.[ora]?.[4] ?? '', grupEditat.ore?.[ora]?.[5] ?? ''];
-        console.log('Grup editat', grupEditat);
+        grupEditat.ore[ora] = [
+            newActivitata,
+            grupEditat.ore?.[ora]?.[1] ?? '',
+            grupEditat.ore?.[ora]?.[2] ?? '',
+            grupEditat.ore?.[ora]?.[3] ?? '',
+            grupEditat.ore?.[ora]?.[4] ?? '',
+            grupEditat.ore?.[ora]?.[5] ?? ''
+        ];
         setGrupuri(newGrupuri);
-    } 
-    
+    };
+
+    const editeazaNumarMaximLocuri = (id, ziua, baza, locul, ora, newNrMaxDisponibile) => {
+        const newEditedInputs = new Set(editedInputs);
+        newEditedInputs.add(id);
+        setEditedInputs(newEditedInputs);
+        const newGrupuri = [...grupuri];
+        const grupEditat = newGrupuri.find(g => g.id === id);
+        grupEditat.ore[ora] = [
+            grupEditat.ore?.[ora]?.[0] ?? '',
+            grupEditat.ore?.[ora]?.[1] ?? '',
+            newNrMaxDisponibile,
+            grupEditat.ore?.[ora]?.[3] ?? '',
+            grupEditat.ore?.[ora]?.[4] ?? '',
+            grupEditat.ore?.[ora]?.[5] ?? ''
+        ];
+        setGrupuri(newGrupuri);
+    };
 
     const editDay = (zi) => {
         setZiEditata(zi);
@@ -266,56 +319,52 @@ export function Orar({ orar, user, setOrar }) {
 
     const handleSave = async () => {
         const convertOrarToArray = [];
-    
+
         editedInputs.forEach(id => {
-            const grupGasit = grupuri.find(grup => grup.id === id); 
+            const grupGasit = grupuri.find(grup => grup.id === id);
             if (grupGasit) {
                 const { ziua, baza, locul, ore } = grupGasit;
                 for (const ora in ore) {
                     const [activitate, participanti, nr_max_locuri, id_slot] = ore[ora];
                     convertOrarToArray.push({
-                        ziua, 
+                        ziua,
                         baza,
                         locul,
-                        activitate,  
+                        activitate,
                         participanti,
                         nr_max_locuri,
                         id: id_slot ?? null,
-                        ora 
+                        ora
                     });
                 }
             }
         });
-    
+
         try {
             await axiosInstance.post('/save', { data: convertOrarToArray });
             const response = await axiosInstance.get('/orar');
             setOrar(response.data);
-            // reconstruiește grupuri dacă e cazul
         } catch (error) {
             console.error('Eroare la salvare sau reîncărcare:', error);
         }
-    
+
         setZiEditata(null);
     };
-    
-    const closeEditMode = () => {
-        setZiEditata(null);  
-    };
-    
-     
 
+    const closeEditMode = () => {
+        setZiEditata(null);
+    };
 
     return (
         <>
             <div>
-                <div className="">
+                <div>
                     <h3>Orar sem. I an universitar 2024 - 2025</h3>
                 </div>
-                <table className="generalPadding ">
+
+                <table className="generalPadding">
                     <thead>
                         <tr>
-                            {/* <th>Opțiuni</th> */}
                             {user.role === 'profesor' && <th>Opțiuni</th>}
                             <th>Ziua</th>
                             <th>Baza</th>
@@ -329,13 +378,53 @@ export function Orar({ orar, user, setOrar }) {
                         {rows}
                     </tbody>
                 </table>
+
                 {ziEditata && (
                     <div className="wrapper wrapperBtnSave">
-                        <MainButton text="Save" onClick={() => handleSave()} />
-                        <MainButton text="Back" onClick={() => closeEditMode()}/>
+                        <MainButton text="Save" onClick={handleSave} />
+                        <MainButton text="Back" onClick={closeEditMode} />
                     </div>
                 )}
+
+                {/* MODAL PREZENȚĂ */}
+                {prezentaModalOpen && (
+                <div className="prezentaModal">
+                    <h3>Prezența pentru slot {slotPrezentat}</h3>
+
+                    <label>
+                        Selectează data prezenței:
+                        <input
+                            type="date"
+                            value={dataPrezenta}
+                            onChange={(e) => setDataPrezenta(e.target.value)}
+                        />
+                    </label>
+
+                    <ul>
+                        {listaStudentiPrezenta.map((student, index) => (
+                            <li key={index}>
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={student.prezent}
+                                        onChange={() => {
+                                            const newLista = [...listaStudentiPrezenta];
+                                            newLista[index].prezent = !newLista[index].prezent;
+                                            setListaStudentiPrezenta(newLista);
+                                        }}
+                                    />
+                                    {student.nume} {student.email ? `(${student.email})` : ''}
+                                </label>
+                            </li> 
+                        ))}
+                    </ul>
+
+                    <button onClick={handleSalvarePrezenta}>Salvează prezența</button>
+                    <button onClick={() => setPrezentaModalOpen(false)}>Anulează</button>
+                </div>
+            )}
             </div>
         </>
     );
 }
+
