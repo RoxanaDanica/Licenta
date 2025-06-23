@@ -8,15 +8,14 @@ export function HeaderProfesor({ setUser }) {
 
   return (
     <header className='navBar'>
-      <div className='wrapperNavBar wrapper'>
-        <div className="logo">
-          <h2>EFS</h2>
-        </div>
+      <div className='wrapperNavBar'>
+  
         <nav>
           <ul>
             <li><a onClick={() => navigate('/orar')}>Orar</a></li>
             <li><a onClick={() => navigate('/materii')}>Materii</a></li>
             <li><a onClick={() => navigate('/profesori')}>Profesori</a></li>
+            <li><a onClick={() => navigate('/prezenta')}>Prezenta</a></li>
             <li><LogoutButton setUser={setUser}  /></li>
           </ul>
         </nav>

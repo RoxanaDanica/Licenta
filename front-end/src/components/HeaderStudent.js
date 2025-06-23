@@ -8,14 +8,11 @@ export function HeaderStudent({ setUser }) {
 
   return (
     <header className='navBar'>
-      <div className='wrapperNavBar wrapper'>
-        <div className="logo">
-          <h2>EFS</h2>
-        </div>
+      <div className='wrapperNavBar'>
         <nav>
           <ul>
-            <li><a onClick={() => navigate('/orar')}>Orar</a></li>
-            <li><LogoutButton setUser={setUser}  /></li>
+            <li><a onClick={() => navigate('/Orar')}>Orar</a></li>
+            <li><LogoutButton setUser={setUser}/></li>
           </ul>
         </nav>
       </div>

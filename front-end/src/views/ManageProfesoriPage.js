@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { axiosInstance } from '../api/axios';
 import { MainButton } from '../components/MainButton';
+import { Layout } from '../components/Layout';
 
-export const ManageProfesoriPage = () => {
+export const ManageProfesoriPage = ( { user } ) => {
   const [name, setName] = useState('');
   const [materie, setMaterie] = useState('');
   const [materii, setMaterii] = useState([]);
@@ -72,7 +73,8 @@ export const ManageProfesoriPage = () => {
   };
 
   return (
-    <div>
+    <Layout user={user}>
+      <div>
       <h1 className='wrapper'>Profesori</h1>
       <form className='wrapper generalPadding formContainer' onSubmit={handleSubmit}>
         <div className="formWrapper">
@@ -125,11 +127,11 @@ export const ManageProfesoriPage = () => {
               <tbody>
                 {profesori.map((prof) => (
                   <tr key={prof.id}>
-                    <td>{prof.nume_profesor}</td>
-                    <td>{prof.nume_materie}</td>
+                    <td className='box'>{prof.nume_profesor}</td>
+                    <td className='box'>{prof.nume_materie}</td>
                     <td className='wrapperBtns'>
                       <MainButton onClick={() => handleEdit(prof)} text="Edit"/>
-                      <MainButton onClick={() => handleDelete(prof.id)} text="Delete" />
+                      <MainButton style={ {marginTop: 10 + 'px', marginBottom: 10 + 'px'}} onClick={() => handleDelete(prof.id)} text="Delete" />
                     </td>
                   </tr>
                 ))}
@@ -137,5 +139,6 @@ export const ManageProfesoriPage = () => {
             </table>
       </div>
     </div>
+    </Layout>
   );
 };

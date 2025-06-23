@@ -14,6 +14,41 @@ const createSQL = `
         FOREIGN KEY (id_materie) REFERENCES materii(id) ON DELETE SET NULL
     );
 
+    const createTableQuery = async () => {
+    const connection = retrieveConnection();
+    await connection.execute(
+        CREATE TABLE IF NOT EXISTS prezente (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        id_student INT,
+        id_slot INT,
+        data_prezentei DATE,
+        FOREIGN KEY (id_student) REFERENCES studenti(id),
+        FOREIGN KEY (id_slot) REFERENCES orar(id)
+        );
+    );
+    console.log('Tabela "prezente" a fost creată cu succes.');
+    };
+
+       const alterPrezenteTable = async () => {
+        const connection = await retrieveConnection();
+        try {
+          await connection.execute(ALTER TABLE prezente ADD COLUMN prezent BOOLEAN DEFAULT FALSE);
+          console.log('Coloana "prezent" a fost adăugată.');
+        } catch (err) {
+          if (err.code === 'ER_DUP_FIELDNAME') {
+            console.log('Coloana "prezent" există deja.');
+          } else {
+            throw err;
+          }
+        } 
+      };
+      
+
+    alterPrezenteTable();
+      
+    await createTableQuery();
+      
+
     CREATE TABLE IF NOT EXISTS orar (
         id INT AUTO_INCREMENT PRIMARY KEY,
         ziua VARCHAR(20) NOT NULL,

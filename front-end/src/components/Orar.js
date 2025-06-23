@@ -1,5 +1,6 @@
 import './styles/Orar.css';  
 import { MainButton } from './MainButton';
+import { ExportButton } from './ExportButton';
 import { useEffect, useState } from 'react';
 import { axiosInstance } from '../api/axios';
 import * as XLSX from "xlsx";
@@ -25,7 +26,7 @@ function grupareOrar(orar) {
     return Object.values(grupZiBazaLoc); 
 }
 
-function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent, exportaStudentiExcel }) {
+function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent, exportaStudentiExcel, onLanseazaPrezenta }) {
     return (
         <tr style={editMode && editMode !== linie.ziua ? { display: 'none' } : {}} className={`zi-${linie.ziua}`}>
             {/* <td>
@@ -45,7 +46,7 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                 let valoare = linie.ore[ora] || ['', ''];
 
                 return ( 
-                    <td key={index}>
+                    <td className={valoare[0] !== '' || valoare[1] !== '' ? 'box' : ''} key={index}> 
                         {editMode === linie.ziua ? (
                             <> 
                                 <select value={linie.ore?.[ora]?.[0] ?? ''} onChange={(e) => { const materieSelectata = e.target.value; const profesorGasit = materiePreferata.find(item => item.nume_materie === materieSelectata)?.nume_profesor ?? ''; onChangeActivitate(linie.id, linie.ziua, linie.baza, linie.locul, ora, materieSelectata); onChangeProfesor(linie.id, linie.ziua, linie.baza, linie.locul, ora, profesorGasit);  const nrMaxExistenta = linie.ore?.[ora]?.[2];
@@ -69,11 +70,15 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                             </>
                         ) : (
                             <>
-                                <span>{valoare[0]}</span><br />
-                                <span>{valoare[1]}</span> <br/>
-                                {valoare[2] && (
-                                    <span className="nrDisponibile" title="Numar maxim de locuri ocupate/disponibile"> Locuri: {valoare[4]}/{valoare[2]} </span>
-                                )}
+                                <div className='rowBox'>
+                                    <div>
+                                        <span>{valoare[0]}</span><br />
+                                        <span>{valoare[1]}</span> 
+                                    </div>
+                                    {valoare[2] && (
+                                        <span className="nrDisponibile" title="Numar maxim de locuri ocupate/disponibile"> Locuri: {valoare[4]}/{valoare[2]} </span>
+                                    )}
+                                </div>
 
                                 {
                                     user?.role === 'student' && valoare[2] && ( 
@@ -82,9 +87,10 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                 } 
                                 {
                                     user?.role === 'profesor' && valoare[4] > 0 && (
-                                        <button onClick={() => exportaStudentiExcel(linie.ore?.[ora]?.[3])}>
-                                            Exporta studenti 
-                                        </button>
+                                        <>
+                                            <ExportButton text={'Exporta studenti'} onClick={() => exportaStudentiExcel(linie.ore?.[ora]?.[3])} />
+                                            <ExportButton style={ {marginTop: 10 + 'px', marginBottom: 10 + 'px'}} text={'Lansează prezența'} onClick={() => onLanseazaPrezenta(valoare[3])} />
+                                        </>
                                     )
                                 }
 
@@ -97,6 +103,29 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
         </tr>
     );
 }
+
+const onLanseazaPrezenta = (idSlot) => {
+    const dataCurenta = new Date().toISOString().split('T')[0]; // format YYYY-MM-DD
+ axiosInstance.post('/prezenta/lansare', 
+  {
+    id_slot: idSlot,
+    data: dataCurenta
+  },
+  {
+    headers: { 'Content-Type': 'application/json' }
+  }
+)
+.then(response => {
+  console.log('Prezență lansată:', response.data);
+  alert('Prezența a fost lansată cu succes!');
+})
+.catch(err => {
+  console.error('Eroare lansare prezență:', err);
+  alert('Eroare la lansarea prezenței!');
+});
+
+  };
+   
 
 /*
     grupuri = {
@@ -127,7 +156,7 @@ export function Orar({ orar, user, setOrar }) {
     const zileAfisate = new Set();
 
     useEffect(() => {
-        // console.log('grupuri===>', grupuri);
+        console.log('grupuri===>', grupuri);
     }, [grupuri]);
 
 
@@ -150,9 +179,9 @@ export function Orar({ orar, user, setOrar }) {
             if (ziNoua) {
                 zileAfisate.add(linie.ziua);
             }
-
+ 
             liniiOrar.push(
-                <RowOrar key={`row-${i}`} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user} onInscrieStudent={inscrieStudent} exportaStudentiExcel={exportaStudentiExcel} />
+                <RowOrar key={`row-${i}`}   onLanseazaPrezenta={onLanseazaPrezenta} linie={linie} ore={ore} editMode={ziEditata} ziNoua={ziNoua} onEdit={editDay/* !!! */} onChangeActivitate={editeazaActivitate} onChangeProfesor={editeazaProfesor} onChangeNumarMaximLocuri={editeazaNumarMaximLocuri} materiePreferata={materiePreferata} user={user} onInscrieStudent={inscrieStudent} exportaStudentiExcel={exportaStudentiExcel} />
             );
 
             // add empty line
@@ -230,7 +259,6 @@ export function Orar({ orar, user, setOrar }) {
         setGrupuri(newGrupuri);
     } 
     
-    //TO DO => SA NU POT SAVLA NR MAX DE LOCURI < PARTICIPANTI
 
     const editDay = (zi) => {
         setZiEditata(zi);
@@ -280,33 +308,34 @@ export function Orar({ orar, user, setOrar }) {
 
     return (
         <>
-            <div className="wrapper">
-                <h3>Orar sem. I an universitar 2024 - 2025</h3>
-            </div>
-            <table className="generalPadding wrapper">
-                <thead>
-                    <tr>
-                        {/* <th>Opțiuni</th> */}
-                        {user.role === 'profesor' && <th>Opțiuni</th>}
-                        <th>Ziua</th>
-                        <th>Baza</th>
-                        <th>Locul</th>
-                        {ore.map((ora, index) => (
-                            <th key={index}>{ora}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rows}
-                </tbody>
-            </table>
-            {ziEditata && (
-                <div className="wrapper wrapperBtnSave">
-                    <MainButton text="Save" onClick={() => handleSave()} />
-                    <MainButton text="Back" onClick={() => closeEditMode()}/>
+            <div>
+                <div className="">
+                    <h3>Orar sem. I an universitar 2024 - 2025</h3>
                 </div>
-            )}
-
+                <table className="generalPadding ">
+                    <thead>
+                        <tr>
+                            {/* <th>Opțiuni</th> */}
+                            {user.role === 'profesor' && <th>Opțiuni</th>}
+                            <th>Ziua</th>
+                            <th>Baza</th>
+                            <th>Locul</th>
+                            {ore.map((ora, index) => (
+                                <th key={index}>{ora}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows}
+                    </tbody>
+                </table>
+                {ziEditata && (
+                    <div className="wrapper wrapperBtnSave">
+                        <MainButton text="Save" onClick={() => handleSave()} />
+                        <MainButton text="Back" onClick={() => closeEditMode()}/>
+                    </div>
+                )}
+            </div>
         </>
     );
 }

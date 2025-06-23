@@ -35,7 +35,7 @@ export const enrollStudentInCourse = async(id_student, id_slot) => {
 export const retrieveEnrolledStudentsBySlot = async (id_slot) => {
     const [students] = await retrieveConnection().execute(
         `
-        SELECT studenti.id, studenti.nume
+        SELECT studenti.id, studenti.nume, orar.ziua, orar.baza, orar.locul, orar.participanti, orar.activitate, orar.ora
         FROM orar
         JOIN studenti_inscrisi ON orar.id = studenti_inscrisi.id_slot
         JOIN studenti ON studenti_inscrisi.id_student = studenti.id

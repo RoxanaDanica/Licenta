@@ -7,6 +7,8 @@ import materiRouter from './src/routes/materiiRoutes.js';
 import orarRouter from './src/routes/orarRoutes.js';
 import profesoriRouter from './src/routes/profesoriRoutes.js';
 import enrolledStudents from './src/routes/enrolledStudentsRoutes.js';
+import prezenteRouter from './src/routes/prezentaRoutes.js';
+
 
 const app = express();
 app.use(cors());
@@ -27,6 +29,7 @@ app.use('/profesor', profesoriRouter);
 app.use('/inscriere', enrolledStudents);
 app.use('/slot', enrolledStudents);
 app.use('/studenti-inscrisi', enrolledStudents); 
+app.use('/prezenta', prezenteRouter);
 
 async function startApp() {
     await initializeDatabase(); 
@@ -34,7 +37,7 @@ async function startApp() {
     // const clearAllEnrollments = async () => {
     //     await retrieveConnection().execute('DELETE FROM studenti_inscrisi');
     // };
-    
+     
     // clearAllEnrollments();
 
     // const  modificaTabelaStudenti = async () => {
@@ -65,9 +68,16 @@ async function startApp() {
     // await retrieveConnection().execute(`ALTER TABLE studenti CHANGE name nume VARCHAR(100)`);
 
 
-    app.listen(3000, () => {
-        console.log('Serverul rulează pe portul 3000');
-    });
+    // app.listen(3000, () => {
+    //     console.log('Serverul rulează pe portul 3000');
+    // });
+    if (process.env.NODE_ENV !== 'test') {
+        app.listen(3000, () => {
+          console.log('Serverul rulează pe portul 3000');
+        });
+    }
+      
 }
+export default app;
 
 startApp();

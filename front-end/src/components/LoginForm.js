@@ -29,14 +29,14 @@ export function LoginForm({ users, onLogin }) {
   return (
     <form onSubmit={handleSubmit}>
       <div className="groupForm">
-        <input placeholder='E-mail'
+        <input placeholder='E-mail' name='email'
           value={userName}
           onChange={e => setUserName(e.target.value)}
         />
       </div>
       <div className="groupForm">
         <input placeholder='Password'
-          type="password"
+          type="password" name='password'
           value={password}
           onChange={e => setPassword(e.target.value)}
         />

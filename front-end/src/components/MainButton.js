@@ -1,9 +1,9 @@
 
-export function MainButton({text, onClick})
+export function MainButton({text, onClick, style})
 {
     return (
         <>
-            <button className="mainButton" onClick={onClick} >{text}</button>
+            <button className="mainButton" style={style} onClick={onClick} >{text}</button>
         </>
     )
 }
