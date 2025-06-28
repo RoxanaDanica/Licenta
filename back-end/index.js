@@ -34,6 +34,28 @@ app.use('/prezenta', prezenteRouter);
 async function startApp() {
     await initializeDatabase(); 
 
+    // async function addUniqueConstraint() {
+    //     const connection = await retrieveConnection();
+    //     try {
+    //         await connection.query(`
+    //             ALTER TABLE profesori_materii
+    //             ADD CONSTRAINT uniq_prof_materie UNIQUE (id_profesor, id_materie)
+    //         `);
+    //         console.log("UNIQUE constraint adăugat cu succes pe (id_profesor, id_materie).");
+    //     } catch (err) {
+    //         if (err.code === 'ER_DUP_KEYNAME' || err.message.includes('Duplicate key name')) {
+    //             console.log("UNIQUE constraint există deja.");
+    //         } else {
+    //             console.error("Eroare la adăugarea UNIQUE constraint:", err);
+    //         }
+    //     } finally {
+    //         await connection.end();
+    //     }
+    // }
+    
+    // addUniqueConstraint(); 
+
+
     // const clearAllEnrollments = async () => {
     //     await retrieveConnection().execute('DELETE FROM studenti_inscrisi');
     // };
@@ -71,6 +93,78 @@ async function startApp() {
     // app.listen(3000, () => {
     //     console.log('Serverul rulează pe portul 3000');
     // });
+
+
+
+    //     const modificaTabelaProfesori = async () => {
+//       const connection = await retrieveConnection();
+//       try {
+//           await connection.execute(`ALTER TABLE profesori ADD COLUMN email VARCHAR(100)`);
+//           console.log('Coloana "email" a fost adăugată.');
+//       } catch (err) {
+//           if (err.code === 'ER_DUP_FIELDNAME') {
+//               console.log('Coloana "email" există deja.');
+//           } else {
+//               throw err;
+//           }
+//       }
+  
+//       try {
+//           await connection.execute(`ALTER TABLE profesori ADD COLUMN password VARCHAR(100)`);
+//           console.log('Coloana "password" a fost adăugată.');
+//       } catch (err) {
+//           if (err.code === 'ER_DUP_FIELDNAME') {
+//               console.log('Coloana "password" există deja.');
+//           } else {
+//               throw err;
+//           }
+//       }
+  
+//       try {
+//           await connection.execute(`ALTER TABLE profesori ADD COLUMN rol VARCHAR(50) DEFAULT 'profesor'`);
+//           console.log('Coloana "rol" a fost adăugată.');
+//       } catch (err) {
+//           if (err.code === 'ER_DUP_FIELDNAME') {
+//               console.log('Coloana "rol" există deja.');
+//           } else {
+//               throw err;
+//           }
+//       }
+//   };
+
+//   modificaTabelaProfesori();
+
+//   const insertProfesori = async () => {
+//     const connection = await retrieveConnection();
+
+//     // Lista de nume unice profesori (fără duplicate)
+//     const profesori = [
+//         "Gui", "Alexandru", "Sărăndan", "Ionescu", "Molcuț",
+//         "Szabo", "Datcu", "Varga", "Chirilă M", "Ciorsac"
+//     ];
+
+//     for (const nume_profesor of profesori) {
+//         // INSERT IGNORE pentru a evita duplicate la rerulare
+//         await connection.execute(`
+//             INSERT IGNORE INTO profesori (nume_profesor, email, password, rol)
+//             VALUES (?, '', 'profesor', 'profesor')
+//         `, [nume_profesor]);
+//     }
+
+//     console.log("Profesorii au fost inserați cu succes în tabela profesori.");
+// };
+// const updateParolaProfesori = async () => {
+//   const connection = await retrieveConnection();
+
+//   await connection.execute(`
+//       UPDATE profesori SET password = 'profesor'
+//   `);
+
+//   console.log("Toți profesorii au acum parola setată la 'profesor'.");
+// };
+
+// updateParolaProfesori();
+  
     if (process.env.NODE_ENV !== 'test') {
         app.listen(3000, () => {
           console.log('Serverul rulează pe portul 3000');

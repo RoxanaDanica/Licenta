@@ -1,4 +1,4 @@
-import { addProfesor, deleteProfesor, getProfesori, updateProfesor } from "../persistence/profesori.js";
+import { addProfesor, deleteProfesor, getProfesori, updateProfesor, getMateriiProfesor, saveMateriiSecundare  } from "../persistence/profesori.js";
 
 const retriveProfesori = async () => {
     const profesori = await getProfesori();
@@ -10,6 +10,10 @@ const retriveProfesor = async (id_materie, nume_profesor) => {
     return profesor;
 }
 
+const retriveMateriiProfesor = async (id_profesor) => {
+    return await getMateriiProfesor(id_profesor);
+};
+
 const editProfesor = async (id_materie, nume_profesor, id) => {
     const profesor = await updateProfesor(id_materie, nume_profesor, id);
     return profesor;
@@ -20,4 +24,10 @@ const removeProfesor = async(id) => {
     return profesor;
 };
 
-export { retriveProfesori, retriveProfesor, editProfesor, removeProfesor };
+
+const salveazaMateriiSecundare = async (id_profesor, materii) => {
+    return await saveMateriiSecundare(id_profesor, materii);
+}
+
+
+export { retriveProfesori, retriveProfesor, editProfesor, removeProfesor, retriveMateriiProfesor, salveazaMateriiSecundare };

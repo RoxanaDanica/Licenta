@@ -12,7 +12,7 @@ export const ManageProfesoriPage = ( { user } ) => {
 
   useEffect(() => {
     fetchProfesori();
-    fetchMaterii();
+    fetchMaterii(); 
   }, []);
 
   const fetchProfesori = async () => {

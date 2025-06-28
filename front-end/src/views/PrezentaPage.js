@@ -19,8 +19,8 @@ export const PrezentaPage = ({ user }) => {
   if (user.role === 'student') {
     return (
       <Layout user={user}>
-      <PrezentaStudent student={user} />;
-    </Layout>
+        <PrezentaStudent student={user} />;
+      </Layout>
     );
   }
 

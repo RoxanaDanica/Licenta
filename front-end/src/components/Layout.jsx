@@ -3,6 +3,7 @@
 import React from 'react';
 import { HeaderProfesor } from './HeaderProfesor';
 import { HeaderStudent } from './HeaderStudent';
+import { HeaderAdministrator } from './HeaderAdministrator'
 import { Header } from './Header'; 
 
 export function Layout({ user, children, setUser }) {
@@ -18,7 +19,7 @@ export function Layout({ user, children, setUser }) {
                 <aside className="navLeft">
                     {user?.role === 'profesor' && <HeaderProfesor setUser={setUser} />}
                     {user?.role === 'student' && <HeaderStudent setUser={setUser} />}
-                    {user?.role === 'administrator' && <Header setUser={setUser} />}
+                    {user?.role === 'administrator' && <HeaderAdministrator setUser={setUser} />}
                 </aside>
 
                 <main className="contentPage">

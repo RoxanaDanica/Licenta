@@ -26,14 +26,18 @@ function grupareOrar(orar) {
     return Object.values(grupZiBazaLoc); 
 }
 
-function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate,onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent, exportaStudentiExcel, onLanseazaPrezenta }) {
+
+function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onChangeActivitate, onChangeNumarMaximLocuri, materiePreferata, user, onInscrieStudent, exportaStudentiExcel, onLanseazaPrezenta }) {
+
+
+    const materiiVizibile = user?.role === 'administrator'
+        ? materiePreferata
+        : materiePreferata.filter(item => item.nume_profesor === user.username);
+
     return (
         <tr style={editMode && editMode !== linie.ziua ? { display: 'none' } : {}} className={`zi-${linie.ziua}`}>
-            {/* <td>
-                {ziNoua && linie.ziua && <MainButton text={`Edit ${linie.ziua}`} onClick={() => onEdit(linie.ziua)} />}
-            </td> */}
-            { user?.role === 'profesor' && (
-                <td>
+            { ( user?.role === 'profesor' || user?.role === 'administrator' ) && (
+                <td> 
                     {ziNoua && linie.ziua && (
                         <MainButton text={`Edit ${linie.ziua}`} onClick={() => onEdit(linie.ziua)} />
                     )}
@@ -43,19 +47,30 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
             <td>{linie.baza}</td>
             <td>{linie.locul}</td>
             {ore.map((ora, index) => {
-                let valoare = linie.ore[ora] || ['', ''];
+                let valoare = linie.ore[ora] || ['', '', '', '', ''];
+
+                const esteSlotDeProfesor = valoare[1] === user.username || valoare[1] === '';
+                const poateModifica = user.role === 'administrator' || esteSlotDeProfesor;
 
                 return ( 
                     <td className={valoare[0] !== '' || valoare[1] !== '' ? 'box' : ''} key={index}> 
-                        {editMode === linie.ziua ? (
+                        {(editMode === linie.ziua && poateModifica) ? (
                             <> 
-                                <select value={linie.ore?.[ora]?.[0] ?? ''} onChange={(e) => { const materieSelectata = e.target.value; const profesorGasit = materiePreferata.find(item => item.nume_materie === materieSelectata)?.nume_profesor ?? ''; onChangeActivitate(linie.id, linie.ziua, linie.baza, linie.locul, ora, materieSelectata); onChangeProfesor(linie.id, linie.ziua, linie.baza, linie.locul, ora, profesorGasit);  const nrMaxExistenta = linie.ore?.[ora]?.[2];
-                                    if (!nrMaxExistenta) {
-                                    onChangeNumarMaximLocuri(linie.id, linie.ziua, linie.baza, linie.locul, ora, 50);
-                                    } }}>
+                                <select 
+                                    value={linie.ore?.[ora]?.[0] ?? ''} 
+                                    onChange={(e) => { 
+                                        const materieSelectata = e.target.value; 
+                                        const profesorGasit = materiiVizibile.find(item => item.nume_materie === materieSelectata)?.nume_profesor ?? ''; 
+                                        onChangeActivitate(linie.id, linie.ziua, linie.baza, linie.locul, ora, materieSelectata); 
+                                        onChangeProfesor(linie.id, linie.ziua, linie.baza, linie.locul, ora, profesorGasit);  
+                                        const nrMaxExistenta = linie.ore?.[ora]?.[2];
+                                        if (!nrMaxExistenta) {
+                                            onChangeNumarMaximLocuri(linie.id, linie.ziua, linie.baza, linie.locul, ora, 50);
+                                        } 
+                                    }}>
                                     <option value="">Selectează materie...</option>
-                                    {[...new Set(materiePreferata.map(item => item.nume_materie))].map((materie, index) => (
-                                        <option key={index} value={materie}>
+                                    {[...new Set(materiiVizibile.map(item => item.nume_materie))].map((materie, idx) => (
+                                        <option key={idx} value={materie}>
                                             {materie}
                                         </option>
                                     ))}
@@ -85,26 +100,36 @@ function RowOrar({ linie, ore, editMode, onEdit, ziNoua, onChangeProfesor, onCha
                                     <button onClick={() => { onInscrieStudent(linie.ore?.[ora]?.[3]); console.log('linie id',linie.ore?.[ora]?.[3] ); }}>Inscrie-te</button>
                                     )
                                 } 
-                                {
-                                    user?.role === 'profesor' && valoare[4] > 0 && (
+
+                                { 
+                                    user?.role === 'profesor' && valoare[4] > 0 && valoare[1] === user.username && (
                                         <>
-                                            <ExportButton text={'Exporta studenti'} onClick={() => exportaStudentiExcel(linie.ore?.[ora]?.[3])} />
-                                            <ExportButton style={ {marginTop: 10 + 'px', marginBottom: 10 + 'px'}} text={'Lansează prezența'} onClick={() => onLanseazaPrezenta(valoare[3])} />
+                                             <ExportButton text={'Exporta studenti'} onClick={() => exportaStudentiExcel(linie.ore?.[ora]?.[3])} />
+                                             <ExportButton style={{marginTop: '10px', marginBottom: '10px'}} text={'Lansează prezența'} onClick={() => onLanseazaPrezenta(valoare[3])} />
                                         </>
                                     )
                                 }
 
+                                {
+                                    user?.role === 'administrator' && valoare[4] > 0 && (
+                                        <>
+                                            <ExportButton text={'Exporta studenti'} onClick={() => exportaStudentiExcel(linie.ore?.[ora]?.[3])} />
+                                            <ExportButton style={{marginTop: '10px', marginBottom: '10px'}} text={'Lansează prezența'} onClick={() => onLanseazaPrezenta(valoare[3])} />
+                                        </>
+                                    )
+                                }
+
+
                             </>
                         )}
-                </td>
-
+                    </td>
                 );
             })}
         </tr>
     );
 }
 
-   
+
 
 /*
     grupuri = {

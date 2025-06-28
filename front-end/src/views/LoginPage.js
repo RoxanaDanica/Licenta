@@ -15,22 +15,39 @@ export function LoginPage({ onLogin }) {
   useEffect(() => {
     axiosInstance.get('/studenti').then(response => {
       setStudenti(response.data);
-
+  
       const setRolStudent = response.data.map(student => ({
         id: student.id,
         username: student.username,
         password: student.password,
         role: 'student'
       }));
+   
 
-      setAllUsers(prev => [...prev, ...setRolStudent]);
+      axiosInstance.get('/profesori').then(profResponse => {
+        const setRolProfesor = profResponse.data.map(profesor => ({
+          id: profesor.id,
+          username: profesor.nume_profesor,
+          password: profesor.password,
+          role: 'profesor'
+        }));
+  
+        setAllUsers(prev => [
+          ...prev,
+          ...setRolStudent,
+          ...setRolProfesor
+        ]);
+      });
+  
     });
   }, []);
+  
+  
 
   const handleLogin = (user) => {
     if (user) {
       onLogin(user);
-      const destination = user.role === 'administrator' ? '/administrator' : '/orar';
+      const destination = user.role === 'administrator' ? '/orar' : '/orar'; 
       navigate(destination);
 
       const userWithId = { ...user, id: user.id };

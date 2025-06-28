@@ -72,7 +72,20 @@ const createSQL = `
 );
         
 `;
+// const createProfesoriMateriiTable = async () => {
+//   await retrieveConnection().execute(`
+//       CREATE TABLE IF NOT EXISTS profesori_materii (
+//           id_profesor INT NOT NULL,
+//           id_materie INT NOT NULL,
+//           FOREIGN KEY (id_profesor) REFERENCES profesori(id) ON DELETE CASCADE,
+//           FOREIGN KEY (id_materie) REFERENCES materii(id) ON DELETE CASCADE,
+//           PRIMARY KEY (id_profesor, id_materie)
+//       )
+//   `);
+//   console.log('Tabela profesori_materii a fost creată sau există deja.');
+// };
 
+// createProfesoriMateriiTable();
     
 `;
 /*===============================================================================
